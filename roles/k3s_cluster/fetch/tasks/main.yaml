@@ -1,0 +1,20 @@
+- name: Copying kubeconfig from server
+  ansible.builtin.fetch:
+    src: "{{ ansible_user_dir }}/.kube/config"
+    dest: "~/.kube/config.{{ cluster_name }}"
+    flat: true
+
+- name: Remove ~/.kube/config
+  ansible.builtin.file:
+    path: ~/.kube/config
+    state: absent
+  delegate_to: localhost
+  connection: local
+
+- name: Copy current kubeconfig to ~/.kube/config
+  ansible.builtin.copy:
+    src: "~/.kube/config.{{ cluster_name }}"
+    dest: ~/.kube/config
+    mode: u=rw,g=,o=
+  delegate_to: localhost
+  connection: local

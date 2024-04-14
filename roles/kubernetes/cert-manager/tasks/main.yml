@@ -1,0 +1,37 @@
+---
+
+- name: Create namespace "{{ cert_manager.namespace }}"
+  kubernetes.core.k8s:
+    name: "{{ cert_manager.namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Apply cert-manager CRDs from URL
+  kubernetes.core.k8s:
+    state: present
+    src: "https://github.com/cert-manager/cert-manager/releases/download/{{ cert_manager.chart_version }}/cert-manager.crds.yaml"
+
+- name: Add cert-manager Helm repository
+  kubernetes.core.helm_repository:
+    name: "cert-manager"
+    url: "https://charts.jetstack.io"
+    state: present
+
+- name: Deploy cert-manager loaded from template (helm)
+  kubernetes.core.helm:
+    name: cert-manager
+    chart_ref: jetstack/cert-manager
+    chart_version: "{{ cert_manager.chart_version }}"
+    release_namespace: "{{ cert_manager.namespace }}"
+    create_namespace: false
+    update_repo_cache: true
+    values: "{{ lookup('template', 'values.yaml.j2') | from_yaml }}"
+
+- name: Include tasks for DuckDNS
+  ansible.builtin.include_tasks: dns_providers/duckdns.yml
+  when: cert_manager.dns_provider == 'duckdns'
+
+- name: Include tasks for Cloudflare
+  ansible.builtin.include_tasks: dns_providers/cloudflare.yml
+  when: cert_manager.dns_provider == 'cloudflare'

@@ -1,0 +1,5 @@
+---
+- name: Reboot server
+  become: true
+  ansible.builtin.reboot:
+  listen: reboot_lxc_server

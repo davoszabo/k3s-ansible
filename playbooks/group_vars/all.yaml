@@ -1,0 +1,2 @@
+# custom_helm_path: "../kubernetes/helm/"
+custom_helm_path: "{{ lookup('env', 'PWD') + '/../kubernetes/helm/' }}"

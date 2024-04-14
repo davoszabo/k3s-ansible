@@ -1,0 +1,1 @@
+letsencrypt_env_tag: "{{ '-staging' if cert_manager.certificate.type == 'letsencrypt' and cert_manager.certificate.letsencrypt.environment == 'staging' else '-prod' }}"

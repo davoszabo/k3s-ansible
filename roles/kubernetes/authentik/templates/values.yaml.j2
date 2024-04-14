@@ -1,0 +1,44 @@
+---
+
+## Globally shared configuration for authentik components.
+# global:
+
+## Authentik configuration
+authentik:
+  log_level: info
+  secret_key: {{ authentik.secret_key }}
+  postgresql:
+    password: {{ authentik.postgresql_password }}
+
+## authentik server
+server:
+  name: server
+  replicas: 1
+  deploymentStrategy:
+    type: Recreate
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+  volumeMounts:
+    - name: authentik-media
+      mountPath: /media
+  volumes:
+    - name: authentik-media
+      persistentVolumeClaim:
+        claimName: authentik-media-pvc
+
+## authentik worker
+worker:
+  name: worker
+  replicas: 1
+
+postgresql:
+  enabled: true
+  auth:
+    username: authentik
+    database: authentik
+    password: {{ authentik.postgresql_password }}
+
+redis:
+  enabled: true

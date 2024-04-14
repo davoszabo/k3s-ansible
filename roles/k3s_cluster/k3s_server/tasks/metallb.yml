@@ -1,0 +1,30 @@
+---
+- name: Create manifests directory on first master
+  ansible.builtin.file:
+    path: /var/lib/rancher/k3s/server/manifests
+    state: directory
+    owner: root
+    group: root
+    mode: 0644
+  when: ansible_hostname == hostvars[groups[group_name_master | default('master')][0]]['ansible_hostname']
+
+- name: "Download to first master: manifest for metallb-{{ metallb.type }}"
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/metallb/metallb/{{ metallb.controller_tag_version }}/config/manifests/metallb-{{ metallb.type }}.yaml"  # noqa yaml[line-length]
+    dest: "/var/lib/rancher/k3s/server/manifests/metallb-crds.yaml"
+    owner: root
+    group: root
+    mode: 0644
+  when: ansible_hostname == hostvars[groups[group_name_master | default('master')][0]]['ansible_hostname']
+
+- name: Set image versions in manifest for metallb-{{ metallb.type }}
+  ansible.builtin.replace:
+    path: "/var/lib/rancher/k3s/server/manifests/metallb-crds.yaml"
+    regexp: "{{ item.change | ansible.builtin.regex_escape }}"
+    replace: "{{ item.to }}"
+  with_items:
+    - change: "metallb/speaker:{{ metallb.controller_tag_version }}"
+      to: "metallb/speaker:{{ metallb.speaker_tag_version }}"
+  loop_control:
+    label: "{{ item.change }} => {{ item.to }}"
+  when: ansible_hostname == hostvars[groups[group_name_master | default('master')][0]]['ansible_hostname']

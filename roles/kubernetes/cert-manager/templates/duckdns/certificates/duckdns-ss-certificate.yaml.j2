@@ -1,0 +1,14 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: duckdns-selfsigned-certificate
+  namespace: {{ cert_manager.namespace }}
+spec:
+  secretName: duckdns-selfsigned-tls
+  issuerRef:
+    name: duckdns-selfsigned-issuer
+    kind: ClusterIssuer
+  dnsNames:
+  - "{{ traefik.domain_name }}"
+  - "*.{{ traefik.domain_name }}"

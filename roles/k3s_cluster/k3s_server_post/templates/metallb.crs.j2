@@ -1,0 +1,43 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: first-pool
+  namespace: metallb-system
+spec:
+  addresses:
+{% if metallb.ip_range is string %}
+{# metallb.ip_range was used in the legacy way: single string instead of a list #}
+{#   => transform to list with single element #}
+{% set metallb_ip_range = [metallb.ip_range] %}
+{% endif %}
+{% for range in metallb_ip_range %}
+  - {{ range }}
+{% endfor %}
+
+{% if metallb.mode == "layer2" %}
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: default
+  namespace: metallb-system
+{% endif %}
+{% if metallb.mode == "bgp" %}
+---
+apiVersion: metallb.io/v1beta2
+kind: BGPPeer
+metadata:
+  name: default
+  namespace: metallb-system
+spec:
+  myASN: {{ metallb.bgp_my_asn }}
+  peerASN: {{ metallb.bgp_peer_asn }}
+  peerAddress: {{ metallb.bgp_peer_address }}
+
+---
+apiVersion: metallb.io/v1beta1
+kind: BGPAdvertisement
+metadata:
+  name: default
+  namespace: metallb-system
+{% endif %}

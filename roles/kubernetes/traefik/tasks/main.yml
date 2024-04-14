@@ -1,0 +1,45 @@
+---
+
+- name: Add Traefik Helm repository
+  kubernetes.core.helm_repository:
+    name: "traefik"
+    url: "https://helm.traefik.io/traefik"
+    state: present
+
+- name: Deploy Traefik loaded from template (helm)
+  kubernetes.core.helm:
+    name: traefik
+    chart_ref: traefik/traefik
+    chart_version: "{{ traefik.chart_version }}"
+    release_namespace: "{{ traefik.namespace }}"
+    create_namespace: true
+    update_repo_cache: true
+    values: "{{ lookup('template', 'values.yaml.j2') | from_yaml }}"
+
+- name: Deploy traefik-default-headers from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'traefik-default-headers.yaml.j2'
+
+- name: Deploy traefik-dashboard-basicauth-secret from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'dashboard/traefik-dashboard-basicauth-secret.yaml.j2'
+  when: traefik.dashboard.basicauth.enabled
+
+- name: Deploy middleware-basicauth from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'dashboard/middleware-basicauth.yaml.j2'
+  when: traefik.dashboard.basicauth.enabled
+
+- name: Deploy TLSStore from template file with the default TLS specification
+  kubernetes.core.k8s:
+    state: present
+    template: 'tlsstore.yaml.j2'
+
+- name: Deploy IngressRoute from template file for traefik dashboard
+  kubernetes.core.k8s:
+    state: present
+    template: 'dashboard/ingressRoute.yaml.j2'
+  when: traefik.dashboard.enabled

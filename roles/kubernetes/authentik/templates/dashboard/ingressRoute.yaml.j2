@@ -1,0 +1,16 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: authentik-dashboard
+  namespace: {{ authentik.namespace }}
+  annotations: 
+    kubernetes.io/ingress.class: {{ traefik.ingress_class }}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`authentik.{{ traefik.domain_name }}`)
+      kind: Rule
+      services:
+        - name: authentik-server
+          port: 443

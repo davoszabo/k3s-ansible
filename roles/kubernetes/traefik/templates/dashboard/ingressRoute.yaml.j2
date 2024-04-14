@@ -1,0 +1,24 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefik-dashboard
+  namespace: {{ traefik.namespace }}
+  annotations: 
+    kubernetes.io/ingress.class: {{ traefik.ingress_class }}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`traefik.{{ traefik.domain_name }}`)
+      kind: Rule
+{% if traefik.dashboard.basicauth.enabled %}
+      middlewares:
+        - name: traefik-dashboard-basicauth
+          namespace: {{ traefik.namespace }}
+{% endif %}
+      services:
+        - name: api@internal
+          kind: TraefikService
+  # It is not necessary the specify this down below, because TLSStore is used, and the IngressRoutes will reference that by default.
+  # tls:
+    # secretName: {{ cert_manager.dns_provider }}-cert-staging-secret

@@ -1,0 +1,11 @@
+---
+
+- name: Deploy Let's Encrypt ClusterIssuer from template file ({{ cert_manager.certificate.letsencrypt.environment }})
+  kubernetes.core.k8s:
+    state: present
+    template: '{{ cert_manager.dns_provider }}/issuers/{{ cert_manager.dns_provider }}-le-issuer-{{ cert_manager.certificate.letsencrypt.environment }}.yaml.j2'
+
+- name: Deploy Let's Encrypt Certificate from template file ({{ cert_manager.certificate.letsencrypt.environment }})
+  kubernetes.core.k8s:
+    state: present
+    template: '{{ cert_manager.dns_provider }}/certificates/{{ cert_manager.dns_provider }}-le-certificate-{{ cert_manager.certificate.letsencrypt.environment }}.yaml.j2'

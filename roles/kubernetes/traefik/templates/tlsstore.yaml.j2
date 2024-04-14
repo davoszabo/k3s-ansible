@@ -1,0 +1,9 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: TLSStore
+metadata:
+  name: default
+  namespace: {{ traefik.namespace }}
+spec:
+  defaultCertificate:
+    secretName: "{{ cert_manager.dns_provider }}-{{ cert_manager.certificate.type }}{{ letsencrypt_env_tag if cert_manager.certificate.type != 'selfsigned' }}-tls"
+

@@ -1,0 +1,20 @@
+---
+- name: Deploy calico
+  ansible.builtin.include_tasks: calico.yml
+  tags: calico
+  when: cni == 'calico'
+
+- name: Deploy cilium
+  ansible.builtin.include_tasks: cilium.yml
+  tags: cilium
+  when: cni == 'cilium'
+
+- name: Deploy metallb pool
+  ansible.builtin.include_tasks: metallb.yml
+  tags: metallb
+  when: load_balancer == 'metallb'
+
+- name: Remove tmp directory used for manifests
+  ansible.builtin.file:
+    path: /tmp/k3s
+    state: absent

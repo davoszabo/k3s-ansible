@@ -1,0 +1,31 @@
+---
+
+- name: Check if Helm is installed
+  hosts: k3s_admin
+  connection: local
+  tasks:
+    - name: Checking Helm version
+      ansible.builtin.command: "helm version --client"
+      register: helm_version
+      failed_when: helm_version.rc != 0 and helm_version.stderr != ""
+      changed_when: false
+
+- name: Include Helm install roles
+  hosts: k3s_admin
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Include roles
+      ansible.builtin.include_role:
+        name: longhorn
+      when: longhorn.enabled
+
+- name: Disable local_storage_provisioner persistently
+  hosts: k3s_servers
+  gather_facts: false
+  tasks:
+    - name: >
+        Rename local-path.yaml in Control plane node to disable
+        that StorageClass and only use Longhorn as default
+      ansible.builtin.command: mv /var/lib/rancher/k3s/server/manifests/local-storage.yaml /var/lib/rancher/k3s/server/manifests/local-storage.yaml.skip
+      when: local_storage_provisioner.enabled and hostvars['localhost']['longhorn'].enabled

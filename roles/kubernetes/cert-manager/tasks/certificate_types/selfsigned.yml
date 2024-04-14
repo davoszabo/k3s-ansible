@@ -1,0 +1,42 @@
+---
+
+- name: Create private key for CA
+  community.crypto.openssl_privatekey:
+    path: "{{ cert_path + 'ca.key' }}"
+
+- name: Create certificate signing request (CSR) for CA certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ cert_path + 'ca.key' }}"
+    common_name: "{{ cert_manager.certificate.selfsigned.common_name }}"
+    country_name: "{{ cert_manager.certificate.selfsigned.country_name }}"
+    organization_name: "{{ cert_manager.certificate.selfsigned.organization_name }}"
+    use_common_name_for_san: false  # since we do not specify SANs, don't use CN as a SAN
+    basic_constraints:
+      - 'CA:TRUE'
+    basic_constraints_critical: true
+    key_usage:
+      - keyCertSign
+    key_usage_critical: true
+  register: ca_csr
+
+- name: Create self-signed CA certificate from CSR
+  community.crypto.x509_certificate:
+    path: "{{ cert_path + 'ca.crt' }}"
+    csr_content: "{{ ca_csr.csr }}"
+    privatekey_path: "{{ cert_path + 'ca.key' }}"
+    provider: selfsigned
+
+- name: Deploy cert-manager secret from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'duckdns/secrets/duckdns-ss-secret.yaml.j2'
+
+- name: Deploy self-signed ClusterIssuer from template file
+  kubernetes.core.k8s:
+    state: present
+    template: '{{ cert_manager.dns_provider }}/issuers/{{ cert_manager.dns_provider }}-ss-issuer.yaml.j2'
+
+- name: Deploy self-signed Certificate from template file
+  kubernetes.core.k8s:
+    state: present
+    template: '{{ cert_manager.dns_provider }}/certificates/{{ cert_manager.dns_provider }}-ss-certificate.yaml.j2'

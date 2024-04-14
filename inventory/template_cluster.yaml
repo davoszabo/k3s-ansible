@@ -1,0 +1,266 @@
+---
+
+# K3S CLUSTER CONFIGURATION
+
+k3s_servers:
+  hosts:
+    k3s-server-01:
+      ansible_host: 192.168.0.10
+      
+k3s_workers:
+  hosts:
+    k3s-worker-01:
+      ansible_host: 192.168.0.11
+    k3s-worker-02:
+      ansible_host: 192.168.0.12
+      
+k3s_cluster:
+  children:
+    k3s_servers:
+    k3s_workers:
+  vars:
+    # The name of the cluster. Can be fiction, or anything.
+    cluster_name: k3s_cluster
+    
+    # The k3s version.
+    k3s_version: v1.27.9+k3s1
+    
+    # This is the user that has SSH access to the machines.
+    ansible_user: root
+    
+    # The systemd directory.
+    systemd_dir: /etc/systemd/system
+    
+    # Your timezone.
+    system_timezone: "Europe/Budapest"
+    
+    # Token needed to ensure control planes can talk together securely. This token should be alpha numeric only!
+    k3s_token: "SOME-SUPER-SECRET-PASSWORD"
+    
+    # Virtual ip-address which will be configured on each master.
+    apiserver_endpoint: "192.168.0.20"
+    
+    # If you intended to use other storage provisioners like Longhorn, you should disable local-storage.
+    local_storage_provisioner:
+      # If set to false, no deployment will be initiated for local-storage, which saves space and power. 
+      # Make sure to use other provisioner for storage if you set this to false!
+      enabled: true
+    
+    # The type of load balancer to access services inside cluster.
+    # -- Options: metallb | kube-vip
+    load_balancer: "kube-vip"
+    
+    kube_vip:
+      # Image tag for kube-vip.
+      tag_version: "v0.5.12"
+      
+      # Tag for kube-vip-cloud-provider manifest.
+      cloud_provider_tag_version: "main"
+      
+      # kube-vip IP range for load balancer.
+      ip_range: "192.168.0.21-192.168.0.29"
+    
+    metallb:
+      # Metallb type frr or native.
+      type: "native"
+      
+      # Metallb mode layer2 or bgp.
+      mode: "layer2"
+      bgp_my_asn: "64513"
+      bgp_peer_asn: "64512"
+      bgp_peer_address: "192.168.30.1"
+      
+      # Image tags for metal lb.
+      speaker_tag_version: "v0.13.9"
+      controller_tag_version: "v0.13.9"
+      
+      # Metallb ip range for load balancer.
+      ip_range: "192.168.0.21-192.168.0.29"
+    
+    # Container Network Interface.
+    # -- Options: flannel | calico | cilium
+    # -- ONLY FLANNEL SUPPORTED CURRENTLY !!!
+    cni: "flannel"
+    
+    # If using calico or cilium, you may specify the cluster pod cidr pool!
+    cluster_cidr: "192.168.36.0/24"
+    
+    flannel:
+      # Interface which will be used for flannel.
+      iface: "eth0"
+    
+    # NOT SUPPORTED YET!
+    calico:
+      # CALICO iface to use tigera operator/calico cni instead of flannel https://docs.tigera.io/calico/latest/about
+      iface: "eth0"
+      
+      # use eBPF dataplane instead of iptables
+      ebpf: false        
+      
+      # calico version tag
+      tag: "v3.27.0"
+    
+    # NOT SUPPORTED YET!
+    # cilium cni instead of flannel or calico
+    # ensure v4.19.57, v5.1.16, v5.2.0 or more recent kernel
+    cilium:
+      iface: "eth0"
+      
+      # native when nodes on same subnet or using bgp, else set routed
+      mode: "native"
+      
+      # cilium version tag
+      tag: "v1.14.6"
+      
+      # enable hubble observability relay and ui
+      hubble: true          
+      
+      # enable cilium bgp control plane for lb services and pod cidrs. disables metallb.
+      bgp: false
+      
+      # bgp parameters for cilium cni. only active when iface is defined and bgp is true.
+      bgp_my_asn: "64513"
+      bgp_peer_asn: "64512"
+      bgp_peer_address: "192.168.30.1"
+      
+      # cidr for cilium loadbalancer ipam
+      bgp_lb_cidr: "192.168.31.0/24"   
+    
+    # --- EXTRA ARGUMENTS  ---
+    
+    # NOT SUPPORTED YET!
+    # For the use of Rasberry PIs.
+    raspberrypi:
+      enabled: false
+    
+    # NOT SUPPORTED YET!
+    # Only enable if your nodes are proxmox LXC nodes, make sure to configure your proxmox nodes
+    # in your hosts.ini file.
+    # Please read https://gist.github.com/triangletodd/02f595cd4c0dc9aac5f7763ca2264185 before using this.
+    # Most notably, your containers must be privileged, and must not have nesting set to true.
+    # Please note this script disables most of the security of lxc containers, with the trade off being that lxc
+    # containers are significantly more resource efficient compared to full VMs.
+    # Mixing and matching VMs and lxc containers is not supported, ymmv if you want to do this.
+    # I would only really recommend using this if you have particularly low powered proxmox nodes where the overhead of
+    # VMs would use a significant portion of your available resources.
+    proxmox_lxc:
+      enabled: false
+      # the user that you would use to ssh into the host, for example if you run ssh some-user@my-proxmox-host,
+      # set this value to some-user
+      ssh_user: root
+      # the unique proxmox ids for all of the containers in the cluster, both worker and master nodes
+      ct_ids:
+        - 200
+        - 201
+        - 202
+        - 203
+        - 204
+    
+    # NOT SUPPORTED YET!
+    # Only enable this if you have set up your own container registry to act as a mirror / pull-through cache
+    # (harbor / nexus / docker's official registry / etc).
+    # Can be beneficial for larger dev/test environments (for example if you're getting rate limited by docker hub),
+    # or air-gapped environments where your nodes don't have internet access after the initial setup
+    # (which is still needed for downloading the k3s binary and such).
+    # k3s's documentation about private registries here: https://docs.k3s.io/installation/private-registry
+    custom_registries: 
+      enabled: false
+      
+      # The registries can be authenticated or anonymous, depending on your registry server configuration.
+      # If they allow anonymous access, simply remove the following bit from custom_registries_yaml
+      #   configs:
+      #     "registry.domain.com":
+      #       auth:
+      #         username: yourusername
+      #         password: yourpassword
+      # The following is an example that pulls all images used in this playbook through your private registries.
+      # It also allows you to pull your own images from your private registry, without having to use imagePullSecrets
+      # in your deployments.
+      # If all you need is your own images and you don't care about caching the docker/quay/ghcr.io images,
+      # you can just remove those from the mirrors: section.
+      yaml_content: |
+        mirrors:
+          docker.io:
+            endpoint:
+              - "https://registry.domain.com/v2/dockerhub"
+          quay.io:
+            endpoint:
+              - "https://registry.domain.com/v2/quayio"
+          ghcr.io:
+            endpoint:
+              - "https://registry.domain.com/v2/ghcrio"
+          registry.domain.com:
+            endpoint:
+              - "https://registry.domain.com"
+              
+        configs:
+          "registry.domain.com":
+            auth:
+              username: yourusername
+              password: yourpassword
+    
+    # NOT SUPPORTED YET!
+    # Only enable and configure these if you access the internet through a proxy.
+    proxy_env:
+      enabled: false
+      # HTTP_PROXY: "http://proxy.domain.local:3128"
+      # HTTPS_PROXY: "http://proxy.domain.local:3128"
+      # NO_PROXY: "*.domain.local,127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+
+# For 'kubectl' and 'helm' commands
+
+k3s_admin:
+  hosts:
+    localhost:
+  vars:
+    traefik:
+      enabled: true
+      # IP should be in the MetalLB/kube-vip-cloud-provider range
+      lb_ip: 192.168.0.21
+      ingress_class: "traefik-private"
+      domain_name: "example.com"
+      namespace: iam
+      chart_version: v26.1.0
+      dashboard:
+        enabled: true
+        basicauth:
+          enabled: false
+          # Install apache2-utils
+          # htpasswd -nb <username> <password> | openssl base64
+          secret: "BASE64-SECRET"
+    
+    cert_manager:
+      enabled: true
+      namespace: iam
+      chart_version: v1.14.3
+      certificate:
+        # -- Options: selfsigned | letsencrypt
+        type: "letsencrypt"
+        selfsigned:
+          common_name: "domain.com"
+          country_name: "US"
+          organization_name: "Domain"
+        letsencrypt:
+          # -- Options: staging | production
+          environment: "staging" 
+      # -- Options: duckdns
+      dns_provider: "duckdns"
+      duckdns:
+        email: "user@email.com"
+        token: ""
+    
+    authentik:
+      enabled: true
+      namespace: iam
+      chart_version: 2024.2.2
+      secret_key: "SOME-SUPER-SECRET-PASSWORD"
+      postgresql_password: "SOME-SUPER-SECRET-PASSWORD"
+      dashboard:
+        enabled: true
+    
+    longhorn:
+      enabled: true
+      namespace: longhorn-system
+      chart_version: 1.6.0
+      dashboard:
+        enabled: true

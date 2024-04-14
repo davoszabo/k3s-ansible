@@ -1,0 +1,49 @@
+---
+
+- name: Create namespace "{{ authentik.namespace }}"
+  kubernetes.core.k8s:
+    name: "{{ authentik.namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Add authentik Helm repository
+  kubernetes.core.helm_repository:
+    name: "goauthentik"
+    url: "https://charts.goauthentik.io"
+    state: present
+
+- name: Deploy PersistentVolumeClaim for layout from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'persistence/media-pvc.yaml.j2'
+
+- name: Deploy authentik loaded from template (helm)
+  kubernetes.core.helm:
+    name: authentik
+    chart_ref: goauthentik/authentik
+    chart_version: "{{ authentik.chart_version }}"
+    release_namespace: "{{ authentik.namespace }}"
+    create_namespace: false
+    update_repo_cache: true
+    values: "{{ lookup('template', 'values.yaml.j2') | from_yaml }}"
+
+- name: Deploy IngressRoute from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'dashboard/ingressRoute.yaml.j2'
+  when: authentik.dashboard.enabled
+
+- name: Deploy authentik-middleware from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'middleware-forwardauth.yaml.j2'
+  notify: authentik_middleware
+
+# - name: Connect to website
+#   ansible.builtin.uri:
+#     url: "https://authentik.{{ traefik.domain_name }}/if/flow/initial-setup/"
+#     method: GET
+#     return_content: true
+
+# Access this page to init Authentik: https://<ingress-host-name>/if/flow/initial-setup/

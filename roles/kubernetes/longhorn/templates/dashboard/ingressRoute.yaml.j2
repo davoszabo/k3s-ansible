@@ -1,0 +1,21 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: longhorn-dashboard
+  namespace: {{ longhorn.namespace }}
+  annotations: 
+    kubernetes.io/ingress.class: {{ traefik.ingress_class }}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`longhorn.{{ traefik.domain_name }}`)
+      kind: Rule
+{% if authentik.enabled %}
+      middlewares:
+        - name: authentik-forwardauth
+          namespace: {{ authentik.namespace }}
+{% endif %}
+      services:
+        - name: longhorn-frontend
+          port: 80

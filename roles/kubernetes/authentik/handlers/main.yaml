@@ -1,0 +1,15 @@
+- name: Change Traefik middleware to Authentik
+  listen: authentik_middleware
+  kubernetes.core.k8s_json_patch:
+    kind: IngressRoute
+    namespace: "{{ traefik.namespace }}"
+    name: traefik-dashboard
+    api_version: traefik.containo.us/v1alpha1
+    patch:
+      - op: replace
+        path: /spec/routes/0/middlewares/0/name
+        value: authentik-forwardauth
+      - op: replace
+        path: /spec/routes/0/middlewares/0/namespace
+        value: "{{ authentik.namespace }}"
+  when: traefik.dashboard.basicauth.enabled
