@@ -3,6 +3,7 @@
 - name: Check if Helm is installed
   hosts: k3s_admin
   connection: local
+  gather_facts: false
   tasks:
     - name: Checking Helm version
       ansible.builtin.command: "helm version --client"
@@ -17,3 +18,10 @@
   roles:
     - role: authentik
       when: authentik.enabled
+      tags:
+        - authentik
+    - role: nextcloud
+      when: nextcloud.enabled
+      tags:
+        - nextcloud
+

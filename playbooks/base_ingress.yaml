@@ -17,5 +17,9 @@
   roles:
     - role: cert-manager
       when: cert_manager.enabled
+      tags:
+        - cert-manager
     - role: traefik
       when: traefik.enabled
+      tags:
+        - traefik
