@@ -1,0 +1,86 @@
+---
+
+- name: Create namespace "{{ nextcloud.namespace }}"
+  kubernetes.core.k8s:
+    name: "{{ nextcloud.namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Add nextcloud Helm repository
+  kubernetes.core.helm_repository:
+    name: "nextcloud"
+    url: "https://nextcloud.github.io/helm/"
+    state: present
+
+- name: Deploy storage manifests from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'storage.yaml.j2'
+
+- name: Deploy nextcloud loaded from template (helm)
+  kubernetes.core.helm:
+    name: nextcloud
+    chart_ref: nextcloud/nextcloud
+    chart_version: "{{ nextcloud.chart_version }}"
+    release_namespace: "{{ nextcloud.namespace }}"
+    create_namespace: false
+    update_repo_cache: true
+    values: "{{ lookup('template', 'values.yaml.j2') | from_yaml }}"
+
+- name: Deploy nextcloud middlewares from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'middlewares.yaml.j2'
+
+- name: Deploy IngressRoute from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'ingressRoute.yaml.j2'
+
+- name: Import self-signed certificate
+  block:
+    - name: Get nextcloud pod name
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: "{{ nextcloud.namespace }}"
+        label_selectors:
+          - app.kubernetes.io/name = nextcloud
+      register: pod_list
+
+    - name: Wait till the nextcloud pod is created
+      kubernetes.core.k8s_info:
+        kind: Pod
+        wait: yes
+        name: "{{ pod_list.resources[0].metadata.name }}"
+        namespace: "{{ nextcloud.namespace }}"
+        wait_sleep: 5
+        wait_timeout: 120
+
+    - name: Copy self-signed certificate into nextcloud pod
+      kubernetes.core.k8s_cp:
+        namespace: "{{ nextcloud.namespace }}"
+        pod: "{{ pod_list.resources[0].metadata.name }}"
+        local_path: "{{ role_path }}/../cert-manager/files/certs/{{ cert_manager.certificate.selfsigned.cert_name }}.crt"
+        remote_path: /etc/ssl/certs/
+        state: to_pod
+
+    - name: Import self-signed certificate with occ command
+      kubernetes.core.k8s_exec:
+        namespace: "{{ nextcloud.namespace }}"
+        pod: "{{ pod_list.resources[0].metadata.name }}"
+        command: su -s /bin/sh www-data -c "php occ security:certificates:import /etc/ssl/certs/{{ cert_manager.certificate.selfsigned.cert_name }}.crt"
+
+    - name: Check if occ command imported the certificate
+      kubernetes.core.k8s_exec:
+        namespace: "{{ nextcloud.namespace }}"
+        pod: "{{ pod_list.resources[0].metadata.name }}"
+        command: su -s /bin/sh www-data -c "php occ security:certificates"
+      register: occ_import_command_status
+
+    - name: Print occ command result
+      debug:
+        msg: "{{ occ_import_command_status.stdout }}"
+  when: cert_manager.certificate.type == "selfsigned"
+

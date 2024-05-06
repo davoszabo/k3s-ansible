@@ -265,3 +265,24 @@ k3s_admin:
       chart_version: 1.6.0
       dashboard:
         enabled: true
+
+    nextcloud:
+      enabled: true
+      namespace: nextcloud
+      chart_version: 4.6.6
+      admin_user:
+        username: admin
+        password: changeme
+      data:
+        # The worker node's mounted external drive
+        path: /pool/nextcloud
+        # The name of the worker node which has a mounted external drive (HDD or SSD)
+        node_name: node-name
+        # Size in Gi
+        size: 1Gi
+      postgresql:
+        enabled: false
+        password: "SOME-SUPER-SECRET-PASSWORD"
+      redis:
+        enabled: false
+        password: "SOME-SUPER-SECRET-PASSWORD"
