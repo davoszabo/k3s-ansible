@@ -237,6 +237,7 @@ k3s_admin:
         # -- Options: selfsigned | letsencrypt
         type: "letsencrypt"
         selfsigned:
+          cert_name: "domain-ca"
           common_name: "domain.com"
           country_name: "US"
           organization_name: "Domain"

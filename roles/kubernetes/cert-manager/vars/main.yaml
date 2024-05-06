@@ -1,1 +1,2 @@
-cert_path: "{{ role_path + '/files/certificates/' }}"
+cert_path: "{{ role_path + '/files/certs/' + cert_manager.certificate.selfsigned.cert_name }}.crt"
+key_path: "{{ role_path + '/files/private/' + cert_manager.certificate.selfsigned.cert_name }}.key"

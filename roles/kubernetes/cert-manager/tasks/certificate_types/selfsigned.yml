@@ -2,11 +2,11 @@
 
 - name: Create private key for CA
   community.crypto.openssl_privatekey:
-    path: "{{ cert_path + 'ca.key' }}"
+    path: "{{ key_path }}"
 
 - name: Create certificate signing request (CSR) for CA certificate
   community.crypto.openssl_csr_pipe:
-    privatekey_path: "{{ cert_path + 'ca.key' }}"
+    privatekey_path: "{{ key_path }}"
     common_name: "{{ cert_manager.certificate.selfsigned.common_name }}"
     country_name: "{{ cert_manager.certificate.selfsigned.country_name }}"
     organization_name: "{{ cert_manager.certificate.selfsigned.organization_name }}"
@@ -21,9 +21,9 @@
 
 - name: Create self-signed CA certificate from CSR
   community.crypto.x509_certificate:
-    path: "{{ cert_path + 'ca.crt' }}"
+    path: "{{ cert_path }}"
     csr_content: "{{ ca_csr.csr }}"
-    privatekey_path: "{{ cert_path + 'ca.key' }}"
+    privatekey_path: "{{ key_path }}"
     provider: selfsigned
 
 - name: Deploy cert-manager secret from template file

@@ -1,4 +1,4 @@
 .vault_pw
 kubeconfig*
 ansible.cfg
-roles/kubernetes/cert-manager/files/*
+
