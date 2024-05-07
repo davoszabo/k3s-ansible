@@ -19,50 +19,6 @@ deploymentLabels: {}
 # Number of replicas to be deployed
 replicaCount: 1
 
-## Allowing use of ingress controllers
-## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
-##
-ingress:
-  enabled: false
-  # className: nginx
-  annotations: {}
-  #  nginx.ingress.kubernetes.io/proxy-body-size: 4G
-  #  kubernetes.io/tls-acme: "true"
-  #  cert-manager.io/cluster-issuer: letsencrypt-prod
-  #  # Keep this in sync with the README.md:
-  #  nginx.ingress.kubernetes.io/server-snippet: |-
-  #    server_tokens off;
-  #    proxy_hide_header X-Powered-By;
-  #    rewrite ^/.well-known/webfinger /index.php/.well-known/webfinger last;
-  #    rewrite ^/.well-known/nodeinfo /index.php/.well-known/nodeinfo last;
-  #    rewrite ^/.well-known/host-meta /public.php?service=host-meta last;
-  #    rewrite ^/.well-known/host-meta.json /public.php?service=host-meta-json;
-  #    location = /.well-known/carddav {
-  #      return 301 $scheme://$host/remote.php/dav;
-  #    }
-  #    location = /.well-known/caldav {
-  #      return 301 $scheme://$host/remote.php/dav;
-  #    }
-  #    location = /robots.txt {
-  #      allow all;
-  #      log_not_found off;
-  #      access_log off;
-  #    }
-  #    location ~ ^/(?:build|tests|config|lib|3rdparty|templates|data)/ {
-  #      deny all;
-  #    }
-  #    location ~ ^/(?:autotest|occ|issue|indie|db_|console) {
-  #      deny all;
-  #    }
-  # tls:
-  #   - secretName: nextcloud-tls
-  #     hosts:
-  #       - nextcloud.kube.home
-  labels: {}
-  path: /
-  pathType: Prefix
-
-
 # Allow configuration of lifecycle hooks
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/
 lifecycle: {}
@@ -141,7 +97,11 @@ nextcloud:
         'trusted_proxies' => array(
           0 => '{{ traefik.lb_ip }}',
         ),
+        'trusted_domains' => array(
+          0 => 'nextcloud.{{ traefik.domain_name }}',
+        ),
         'overwriteprotocol' => 'https',
+        'allow_local_remote_servers' => true,
       );
 
   # Hooks for auto configuration
@@ -215,31 +175,6 @@ nextcloud:
   #   runAsNonRoot: true
   #   readOnlyRootFilesystem: false
 
-nginx:
-  ## You need to set an fpm version of the image for nextcloud if you want to use nginx!
-  enabled: false
-  image:
-    repository: nginx
-    tag: alpine
-    pullPolicy: IfNotPresent
-  containerPort: 80
-
-  config:
-    # This generates the default nginx config as per the nextcloud documentation
-    default: true
-    # custom: |-
-    #     worker_processes  1;..
-
-  resources: {}
-
-  # Set nginx container securityContext parameters. For example, you may need to define runAsNonRoot directive
-  securityContext: {}
-  # the nginx alpine container default user is 82
-  #   runAsUser: 82
-  #   runAsGroup: 33
-  #   runAsNonRoot: true
-  #   readOnlyRootFilesystem: true
-
 internalDatabase:
   enabled: {{ not nextcloud.postgresql.enabled }}
   name: nextcloud
@@ -304,7 +239,7 @@ mariadb:
       # existingClaim: ""
       # storageClass: ""
       accessMode: ReadWriteOnce
-      size: 8Gi
+      size: 4Gi
 
 ##
 ## PostgreSQL chart configuration
@@ -331,7 +266,9 @@ postgresql:
           replicationPasswordKey: ""
   primary:
     persistence:
-      enabled: false
+      enabled: true
+      size: 4Gi
+
       # Use an existing Persistent Volume Claim (must be created ahead of time)
       # existingClaim: ""
       # storageClass: ""
@@ -343,6 +280,7 @@ postgresql:
 
 redis:
   enabled: {{ nextcloud.redis.enabled }}
+  architecture: standalone
   auth:
     enabled: true
     password: {{ nextcloud.redis.password }}
@@ -350,6 +288,9 @@ redis:
     existingSecret: ""
     # Password key to be retrieved from existing secret
     existingSecretPasswordKey: ""
+  master:
+    persistence:
+      size: 4Gi
 
 
 ## Cronjob to execute Nextcloud background tasks
@@ -395,7 +336,7 @@ persistence:
   ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
   ##   GKE, AWS & OpenStack)
   ##
-  storageClass: longhorn
+  storageClass:
 
   ## A manually managed Persistent Volume and Claim
   ## Requires persistence.enabled: true
@@ -452,23 +393,6 @@ startupProbe:
   timeoutSeconds: 5
   failureThreshold: 30
   successThreshold: 1
-
-
-## Enable pod autoscaling using HorizontalPodAutoscaler
-## ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
-##
-hpa:
-  enabled: false
-  cputhreshold: 60
-  minPods: 1
-  maxPods: 10
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
-
 
 ## Prometheus Exporter / Metrics
 ##
@@ -544,7 +468,6 @@ metrics:
     ## @param metrics.serviceMonitor.labels Extra labels for the ServiceMonitor
     ##
     labels: {}
-
 
 rbac:
   enabled: false

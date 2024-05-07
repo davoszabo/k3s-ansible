@@ -38,49 +38,39 @@
     state: present
     template: 'ingressRoute.yaml.j2'
 
+- name: Get nextcloud pod name
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: "{{ nextcloud.namespace }}"
+    label_selectors:
+      - app.kubernetes.io/name = nextcloud
+  register: pod_list
+
+- name: Wait till the nextcloud pod is created
+  kubernetes.core.k8s_info:
+    kind: Pod
+    wait: yes
+    name: "{{ pod_list.resources[0].metadata.name }}"
+    namespace: "{{ nextcloud.namespace }}"
+    wait_sleep: 10
+    wait_timeout: 240
+
 - name: Import self-signed certificate
-  block:
-    - name: Get nextcloud pod name
-      kubernetes.core.k8s_info:
-        api_version: v1
-        kind: Pod
-        namespace: "{{ nextcloud.namespace }}"
-        label_selectors:
-          - app.kubernetes.io/name = nextcloud
-      register: pod_list
-
-    - name: Wait till the nextcloud pod is created
-      kubernetes.core.k8s_info:
-        kind: Pod
-        wait: yes
-        name: "{{ pod_list.resources[0].metadata.name }}"
-        namespace: "{{ nextcloud.namespace }}"
-        wait_sleep: 5
-        wait_timeout: 120
-
-    - name: Copy self-signed certificate into nextcloud pod
-      kubernetes.core.k8s_cp:
-        namespace: "{{ nextcloud.namespace }}"
-        pod: "{{ pod_list.resources[0].metadata.name }}"
-        local_path: "{{ role_path }}/../cert-manager/files/certs/{{ cert_manager.certificate.selfsigned.cert_name }}.crt"
-        remote_path: /etc/ssl/certs/
-        state: to_pod
-
-    - name: Import self-signed certificate with occ command
-      kubernetes.core.k8s_exec:
-        namespace: "{{ nextcloud.namespace }}"
-        pod: "{{ pod_list.resources[0].metadata.name }}"
-        command: su -s /bin/sh www-data -c "php occ security:certificates:import /etc/ssl/certs/{{ cert_manager.certificate.selfsigned.cert_name }}.crt"
-
-    - name: Check if occ command imported the certificate
-      kubernetes.core.k8s_exec:
-        namespace: "{{ nextcloud.namespace }}"
-        pod: "{{ pod_list.resources[0].metadata.name }}"
-        command: su -s /bin/sh www-data -c "php occ security:certificates"
-      register: occ_import_command_status
-
-    - name: Print occ command result
-      debug:
-        msg: "{{ occ_import_command_status.stdout }}"
+  ansible.builtin.include_tasks: import_selfsigned.yaml
   when: cert_manager.certificate.type == "selfsigned"
 
+- name: Import Lets Encrypt certificate
+  ansible.builtin.include_tasks: import_letsencrypt.yaml
+  when: cert_manager.certificate.type == "letsencrypt"
+
+- name: Adding additional fs_storage_path_prefix index to the oc_filecache table
+  kubernetes.core.k8s_exec:
+    namespace: "{{ nextcloud.namespace }}"
+    pod: "{{ pod_list.resources[0].metadata.name }}"
+    command: su -s /bin/sh www-data -c "php occ db:add-missing-indices"
+  register: occ_add_missing_indices_status
+
+- name: Print occ command result
+  debug:
+    msg: "{{ occ_add_missing_indices_status }}"

@@ -281,8 +281,8 @@ k3s_admin:
         # Size in Gi
         size: 1Gi
       postgresql:
-        enabled: false
+        enabled: true
         password: "SOME-SUPER-SECRET-PASSWORD"
       redis:
-        enabled: false
+        enabled: true
         password: "SOME-SUPER-SECRET-PASSWORD"

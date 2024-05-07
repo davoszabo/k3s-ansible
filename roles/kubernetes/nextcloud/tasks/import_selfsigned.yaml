@@ -1,0 +1,31 @@
+---
+
+- name: Copy self-signed certificate into nextcloud pod
+  kubernetes.core.k8s_cp:
+    namespace: "{{ nextcloud.namespace }}"
+    pod: "{{ pod_list.resources[0].metadata.name }}"
+    local_path: "{{ role_path }}/../cert-manager/files/certs/{{ cert_manager.certificate.selfsigned.cert_name }}.crt"
+    remote_path: /etc/ssl/certs/
+    state: to_pod
+
+- name: Pause for 30 sec to let nextcloud be fully installed
+  ansible.builtin.pause:
+    seconds: 30
+
+- name: Import self-signed certificate with occ command
+  kubernetes.core.k8s_exec:
+    namespace: "{{ nextcloud.namespace }}"
+    pod: "{{ pod_list.resources[0].metadata.name }}"
+    command: su -s /bin/sh www-data -c "php occ security:certificates:import /etc/ssl/certs/{{ cert_manager.certificate.selfsigned.cert_name }}.crt"
+
+- name: Check if occ command imported the certificate
+  kubernetes.core.k8s_exec:
+    namespace: "{{ nextcloud.namespace }}"
+    pod: "{{ pod_list.resources[0].metadata.name }}"
+    command: su -s /bin/sh www-data -c "php occ security:certificates"
+  register: occ_import_command_status
+
+- name: Print occ command result
+  debug:
+    msg: "{{ occ_import_command_status.stdout }}"
+
