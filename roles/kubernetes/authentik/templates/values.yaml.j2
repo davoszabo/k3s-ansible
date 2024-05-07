@@ -1,7 +1,12 @@
 ---
 
 ## Globally shared configuration for authentik components.
-# global:
+global:
+  env:
+    - name: AUTHENTIK_BOOTSTRAP_PASSWORD
+      value: {{ authentik.admin.password }}
+    - name: AUTHENTIK_BOOTSTRAP_EMAIL
+      value: {{ authentik.admin.email }}
 
 ## Authentik configuration
 authentik:
@@ -39,6 +44,13 @@ postgresql:
     username: authentik
     database: authentik
     password: {{ authentik.postgresql_password }}
+  primary:
+    persistence:
+      enabled: true
+      size: 2Gi
 
 redis:
   enabled: true
+  master:
+    persistence:
+      size: 2Gi

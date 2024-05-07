@@ -253,9 +253,12 @@ k3s_admin:
     authentik:
       enabled: true
       namespace: iam
-      chart_version: 2024.2.2
+      chart_version: 2024.4.2
       secret_key: "SOME-SUPER-SECRET-PASSWORD"
       postgresql_password: "SOME-SUPER-SECRET-PASSWORD"
+      admin:
+        password: changeme
+        email: user@example.org
       dashboard:
         enabled: true
     
