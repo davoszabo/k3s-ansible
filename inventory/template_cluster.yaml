@@ -254,6 +254,9 @@ k3s_admin:
       enabled: true
       namespace: iam
       chart_version: 2024.4.2
+      subdomain_name: authentik
+      # If your dns_domain is "domain.com", it will be redirected to "<authentik.subdomain_name>.domain.com"
+      redirect_domain_to_subdomain: true
       secret_key: "SOME-SUPER-SECRET-PASSWORD"
       postgresql_password: "SOME-SUPER-SECRET-PASSWORD"
       admin:

@@ -9,8 +9,9 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`authentik.{{ traefik.domain_name }}`)
+    - match: Host(`{{ authentik.subdomain_name }}.{{ traefik.domain_name }}`)
       kind: Rule
       services:
         - name: authentik-server
           port: 443
+

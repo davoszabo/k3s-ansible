@@ -40,10 +40,16 @@
     template: 'middleware-forwardauth.yaml.j2'
   notify: authentik_middleware
 
+- name: Deploy authentik-redirect from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'middleware-redirect.yaml.j2'
+  when: authentik.redirect_domain_to_subdomain
+
+# Access this page to init Authentik: https://<ingress-host-name>/if/flow/initial-setup/
 # - name: Connect to website
 #   ansible.builtin.uri:
 #     url: "https://authentik.{{ traefik.domain_name }}/if/flow/initial-setup/"
 #     method: GET
 #     return_content: true
 
-# Access this page to init Authentik: https://<ingress-host-name>/if/flow/initial-setup/
