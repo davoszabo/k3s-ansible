@@ -257,6 +257,10 @@ k3s_admin:
       subdomain_name: authentik
       # If your dns_domain is "domain.com", it will be redirected to "<authentik.subdomain_name>.domain.com"
       redirect_domain_to_subdomain: true
+      # Set your background URL/path or leave it empty "" to stick with defaults
+      # "https://your-url-to-pic" or "/media/public/pic.jpg"
+      # To disable background enter an invalid path like: "/media"
+      custom_bg: ""
       secret_key: "SOME-SUPER-SECRET-PASSWORD"
       postgresql_password: "SOME-SUPER-SECRET-PASSWORD"
       admin:

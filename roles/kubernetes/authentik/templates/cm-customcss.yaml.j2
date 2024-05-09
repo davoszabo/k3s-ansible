@@ -1,0 +1,15 @@
+---
+
+# Edit custom background image if specified
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: authentik-custom-css
+    namespace: {{ authentik.namespace }}
+data:
+    custom.css: |
+        .pf-c-background-image {
+            --ak-flow-background: url("{{ authentik.custom_bg }}") !important;
+        }
+

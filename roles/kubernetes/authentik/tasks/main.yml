@@ -18,6 +18,12 @@
     state: present
     template: 'persistence/media-pvc.yaml.j2'
 
+- name: Deploy ConfigMap to disable or edit background from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'cm-customcss.yaml.j2'
+  when: authentik.custom_bg
+
 - name: Deploy authentik loaded from template (helm)
   kubernetes.core.helm:
     name: authentik

@@ -28,10 +28,20 @@ server:
   volumeMounts:
     - name: authentik-media
       mountPath: /media
+{% if authentik.custom_bg %}
+    - name: custom-css
+      mountPath: /web/dist/custom.css
+      subPath: custom.css
+{% endif %}
   volumes:
     - name: authentik-media
       persistentVolumeClaim:
         claimName: authentik-media-pvc
+{% if authentik.custom_bg %}
+    - name: custom-css
+      configMap:
+        name: authentik-custom-css
+{% endif %}
 
 ## authentik worker
 worker:
