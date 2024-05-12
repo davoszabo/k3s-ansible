@@ -290,6 +290,15 @@ k3s_admin:
         node_name: node-name
         # Size in Gi
         size: 1Gi
+      # Additional applications
+      apps:
+        # Enhances performance with pre generating thumbnails for images and videos in a separate folder.
+        previewgenerator:
+          enabled: true
+          # IMPORTANT: Data need to be present and the command "php /var/www/html/occ preview:generate-all -vvv" have to be executed before starting the first cron job!
+          # Previews for all images/videos will be generated into /nextcloud/data/appdata_*/previews
+          # By default the pre generation of previews happens each day at 8 PM. The /cron.sh will be started! Logs are under /cron.log
+          pre_generate_cron: "0 20 * * *"
       postgresql:
         enabled: true
         password: "SOME-SUPER-SECRET-PASSWORD"

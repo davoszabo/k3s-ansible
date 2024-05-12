@@ -21,8 +21,32 @@ replicaCount: 1
 
 # Allow configuration of lifecycle hooks
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/
-lifecycle: {}
-  # postStartCommand: []
+  # postStartCommand: ["/bin/bash", "-c", "apt update -y && apt install ffmpeg vim -y"]
+lifecycle:
+  postStartCommand:
+{% if nextcloud.apps.previewgenerator.enabled %}
+    - "/bin/bash"
+    - "-c"
+    - |
+      apt update -y && apt install -y \
+        ffmpeg \
+        vim
+      
+      # Add pre-generate function to crontab for the www-data user
+      cat >> /var/spool/cron/crontabs/www-data << EOF
+      {{ nextcloud.apps.previewgenerator.pre_generate_cron }} php /var/www/html/occ preview:pre-generate
+      EOF
+      
+      # Hack /cron.sh to rather log into a file, then to the stdout
+      touch /cron.log
+      sed -i "$ d" /cron.sh
+      cat >> /cron.sh << EOF
+      exec busybox crond -f -L /cron.log
+      EOF
+
+      /cron.sh > /dev/null 2>&1 & disown
+
+{% endif %}
   # preStopCommand: []
 
 phpClientHttpsFix:
@@ -103,16 +127,42 @@ nextcloud:
         'overwriteprotocol' => 'https',
         'allow_local_remote_servers' => true,
       );
+{% if nextcloud.apps.previewgenerator.enabled %}
+    previewgenerator.config.php: |-
+      <?php
+      $CONFIG = array (
+        'enable_preview' => true,
+        'enabledPreviewProviders' =>
+        array (
+          0 => 'OC\\Preview\\Image',
+          1 => 'OC\\Preview\\Movie',
+          2 => 'OC\\Preview\\TXT',
+          3 => 'OC\\Preview\\MP3',
+          4 => 'OC\\Preview\\MKV',
+          5 => 'OC\\Preview\\MP4',
+          6 => 'OC\\Preview\\AVI',
+        ),
+      );
+{% endif %}
 
   # Hooks for auto configuration
   # Here you could write small scripts which are placed in `/docker-entrypoint-hooks.d/<hook-name>/helm.sh`
   # ref: https://github.com/nextcloud/docker?tab=readme-ov-file#auto-configuration-via-hook-folders
+  # DOESNT OFFER ROOT ACCESS (useless)
   hooks:
     pre-installation:
     post-installation:
     pre-upgrade:
     post-upgrade:
     before-starting:
+{% if nextcloud.apps.previewgenerator.enabled %}
+      php /var/www/html/occ app:install previewgenerator
+      
+      php /var/www/html/occ app:enable previewgenerator
+      
+      echo "Updated crontab with pre-generation of images/videos manually!"
+
+{% endif %}
 
   ## Strategy used to replace old pods
   ## IMPORTANT: use with care, it is suggested to leave as that for upgrade purposes
@@ -296,6 +346,8 @@ redis:
 ## Cronjob to execute Nextcloud background tasks
 ## ref: https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/background_jobs_configuration.html#cron
 ##
+#
+# WONT WORK WITH ADDITIONAL CRON RESOURCES!
 cronjob:
   enabled: false
 
