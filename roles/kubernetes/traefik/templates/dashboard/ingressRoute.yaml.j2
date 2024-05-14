@@ -9,7 +9,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`traefik.{{ traefik.domain_name }}`)
+    - match: Host(`{{ traefik.dashboard.subdomain_name }}.{{ traefik.domain_name }}`)
       kind: Rule
 {% if traefik.dashboard.basicauth.enabled %}
       middlewares:

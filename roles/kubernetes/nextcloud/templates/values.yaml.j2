@@ -54,7 +54,7 @@ phpClientHttpsFix:
   protocol: https
 
 nextcloud:
-  host: "nextcloud.{{ traefik.domain_name }}"
+  host: "{{ nextcloud.subdomain_name }}.{{ traefik.domain_name }}"
   username: {{ nextcloud.admin_user.username }}
   password: {{ nextcloud.admin_user.password }}
   ## Use an existing secret
@@ -122,7 +122,7 @@ nextcloud:
           0 => '{{ traefik.lb_ip }}',
         ),
         'trusted_domains' => array(
-          0 => 'nextcloud.{{ traefik.domain_name }}',
+          0 => '{{ nextcloud.subdomain_name }}.{{ traefik.domain_name }}',
         ),
         'overwriteprotocol' => 'https',
         'allow_local_remote_servers' => true,

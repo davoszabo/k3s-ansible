@@ -215,14 +215,16 @@ k3s_admin:
   vars:
     traefik:
       enabled: true
+      namespace: iam
+      chart_version: v26.1.0
       # IP should be in the MetalLB/kube-vip-cloud-provider range
       lb_ip: 192.168.0.21
       ingress_class: "traefik-private"
       domain_name: "example.com"
-      namespace: iam
-      chart_version: v26.1.0
       dashboard:
         enabled: true
+        # <subdomain_name>.example.com
+        subdomain_name: "traefik"
         basicauth:
           enabled: false
           # Install apache2-utils
@@ -254,6 +256,7 @@ k3s_admin:
       enabled: true
       namespace: iam
       chart_version: 2024.4.2
+      # <subdomain_name>.example.com
       subdomain_name: authentik
       # If your dns_domain is "domain.com", it will be redirected to "<authentik.subdomain_name>.domain.com"
       redirect_domain_to_subdomain: true
@@ -275,11 +278,15 @@ k3s_admin:
       chart_version: 1.6.0
       dashboard:
         enabled: true
+        # <subdomain_name>.example.com
+        subdomain_name: "longhorn"
 
     nextcloud:
       enabled: true
       namespace: nextcloud
       chart_version: 4.6.6
+      # <subdomain_name>.example.com
+      subdomain_name: "nextcloud"
       admin_user:
         username: admin
         password: changeme

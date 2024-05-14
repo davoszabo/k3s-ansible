@@ -9,7 +9,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`nextcloud.{{ traefik.domain_name }}`)
+    - match: Host(`{{ nextcloud.subdomain_name }}.{{ traefik.domain_name }}`)
       kind: Rule
       middlewares:
         - name: nextcloud-headers

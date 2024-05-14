@@ -9,7 +9,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`longhorn.{{ traefik.domain_name }}`)
+    - match: Host(`{{ longhorn.dashboard.subdomain_name }}.{{ traefik.domain_name }}`)
       kind: Rule
 {% if authentik.enabled %}
       middlewares:
