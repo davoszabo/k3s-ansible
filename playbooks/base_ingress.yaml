@@ -23,3 +23,7 @@
       when: traefik.enabled
       tags:
         - traefik
+    - role: cloudflared
+      when: cloudflared.enabled
+      tags:
+        - cloudflared

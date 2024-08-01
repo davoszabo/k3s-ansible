@@ -1,0 +1,18 @@
+---
+
+- name: Add cloudflare Helm repository
+  kubernetes.core.helm_repository:
+    name: "cloudflare"
+    url: "https://cloudflare.github.io/helm-charts"
+    state: present
+
+- name: Deploy cloudflared loaded from template (helm)
+  kubernetes.core.helm:
+    name: cloudflared
+    chart_ref: cloudflare/cloudflare-tunnel-remote
+    chart_version: "{{ cloudflared.chart_version }}"
+    release_namespace: "{{ cloudflared.namespace }}"
+    create_namespace: true
+    update_repo_cache: true
+    values: "{{ lookup('template', 'values.yaml.j2') | from_yaml }}"
+
