@@ -1,0 +1,31 @@
+---
+
+- name: Create namespace "{{ argocd.image_updater.namespace }}"
+  kubernetes.core.k8s:
+    name: "{{ argocd.image_updater.namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Deploy registry-secret from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'registry-secret.yaml.j2'
+  when: argocd.image_updater.private_registry.enabled
+
+- name: Add argo Helm repository
+  kubernetes.core.helm_repository:
+    name: "argo"
+    url: "https://argoproj.github.io/argo-helm"
+    state: present
+
+- name: Deploy argocd-image-updater loaded from template (helm)
+  kubernetes.core.helm:
+    name: argocd-image-updater
+    chart_ref: argo/argocd-image-updater
+    chart_version: "{{ argocd.image_updater.chart_version }}"
+    release_namespace: "{{ argocd.image_updater.namespace }}"
+    create_namespace: false
+    update_repo_cache: true
+    values: "{{ lookup('template', 'values.yaml.j2') | from_yaml }}"
+

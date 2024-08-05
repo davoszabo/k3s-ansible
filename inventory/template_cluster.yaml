@@ -298,6 +298,26 @@ k3s_admin:
         url: "https://gitlab.example.com"
         token: ""
 
+    argocd:
+      enabled: true
+      namespace: argocd
+      chart_version: 7.3.11
+      dashboard:
+        enabled: true
+        subdomain_name: "argocd"
+      image_updater:
+        enabled: true
+        namespace: argocd
+        chart_version: 0.11.0
+        private_registry:
+          enabled: true
+          secret:
+            registry_name: "registry.gitlab.com/group/project"
+            username: ""
+            # Gather Personal Access Token with the proper access
+            token: ""
+            email: ""
+
     nextcloud:
       enabled: true
       namespace: nextcloud

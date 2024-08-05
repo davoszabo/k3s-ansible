@@ -28,3 +28,11 @@
       when: gitlab.runner.enabled
       tags:
         - gitlab-runner
+    - role: argocd
+      when: argocd.enabled
+      tags:
+        - argocd
+    - role: argocd-image-updater
+      when: argocd.image_updater.enabled
+      tags:
+        - argocd-image-updater

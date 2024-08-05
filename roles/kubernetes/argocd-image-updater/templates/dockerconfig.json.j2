@@ -1,0 +1,11 @@
+{
+  "auths": {
+    "{{ argocd.image_updater.private_registry.secret.registry_name }}": {
+      "username": "{{ argocd.image_updater.private_registry.secret.username }}",
+      "password": "{{ argocd.image_updater.private_registry.secret.token }}",
+      "email": "{{ argocd.image_updater.private_registry.secret.email }}",
+      "auth": "{{ (argocd.image_updater.private_registry.secret.username + ':' + argocd.image_updater.private_registry.secret.token) | b64encode }}"
+    }
+  }
+}
+

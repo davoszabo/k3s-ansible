@@ -1,0 +1,24 @@
+---
+
+- name: Add argo Helm repository
+  kubernetes.core.helm_repository:
+    name: "argo"
+    url: "https://argoproj.github.io/argo-helm"
+    state: present
+
+- name: Deploy argo-cd loaded from template (helm)
+  kubernetes.core.helm:
+    name: argocd
+    chart_ref: argo/argo-cd
+    chart_version: "{{ argocd.chart_version }}"
+    release_namespace: "{{ argocd.namespace }}"
+    create_namespace: true
+    update_repo_cache: true
+    values: "{{ lookup('template', 'values.yaml.j2') | from_yaml }}"
+
+- name: Deploy IngressRoute from template file for argocd dashboard
+  kubernetes.core.k8s:
+    state: present
+    template: 'ingressRoute.yaml.j2'
+  when: argocd.dashboard.enabled
+
