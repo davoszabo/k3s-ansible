@@ -24,4 +24,7 @@
       when: nextcloud.enabled
       tags:
         - nextcloud
-
+    - role: gitlab-runner
+      when: gitlab.runner.enabled
+      tags:
+        - gitlab-runner

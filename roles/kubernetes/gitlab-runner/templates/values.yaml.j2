@@ -1,0 +1,174 @@
+#jinja2:variable_start_string:'[%', variable_end_string:'%]', trim_blocks: False
+### GitLab Runner Image
+##
+## By default it's using registry.gitlab.com/gitlab-org/gitlab-runner:alpine-v{VERSION}
+## where {VERSION} is taken from Chart.yaml from appVersion field
+##
+## ref: https://gitlab.com/gitlab-org/gitlab-runner/container_registry/29383?orderBy=NAME&sort=asc&search[]=alpine-v&search[]=
+##
+## Note: If you change the image to the ubuntu release
+##       don't forget to change the securityContext;
+##       these images run on different user IDs.
+##
+image:
+  registry: registry.gitlab.com
+  image: gitlab-org/gitlab-runner
+  # tag: alpine-v{{.Chart.AppVersion}}
+
+## How many runner pods to launch.
+##
+# replicas: 1
+
+## How many old ReplicaSets for this Deployment you want to retain
+# revisionHistoryLimit: 10
+
+## The GitLab Server URL (with protocol) that want to register the runner against
+## ref: https://docs.gitlab.com/runner/commands/index.html#gitlab-runner-register
+##
+gitlabUrl: [% gitlab.runner.url %]
+
+## The Runner Token for adding new Runners to the GitLab Server. This must
+## be retrieved from your GitLab instance. It is the token of an already registered runner.
+## ref: (we don't have docs for that yet, but we want to use an existing token)
+##
+runnerToken: [% gitlab.runner.token %]
+#
+
+## Unregister all runners before termination
+##
+## Updating the runner's chart version or configuration will cause the runner container
+## to be terminated and created again. This may cause your Gitlab instance to reference
+## non-existant runners. Un-registering the runner before termination mitigates this issue.
+## ref: https://docs.gitlab.com/runner/commands/index.html#gitlab-runner-unregister
+##
+# unregisterRunners: true
+
+## When stopping the runner, give it time to wait for its jobs to terminate.
+##
+## Updating the runner's chart version or configuration will cause the runner container
+## to be terminated with a graceful stop request. terminationGracePeriodSeconds
+## instructs Kubernetes to wait long enough for the runner pod to terminate gracefully.
+## ref: https://docs.gitlab.com/runner/commands/#signals
+terminationGracePeriodSeconds: 3600
+
+## Set the certsSecretName in order to pass custom certficates for GitLab Runner to use.
+## Provide resource name for a Kubernetes Secret Object in the same namespace,
+## this is used to populate the /home/gitlab-runner/.gitlab-runner/certs/ directory
+## ref: https://docs.gitlab.com/runner/configuration/tls-self-signed.html#supported-options-for-self-signed-certificates-targeting-the-gitlab-server
+##
+# certsSecretName:
+
+## Configure the maximum number of concurrent jobs
+## ref: https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-global-section
+##
+concurrent: 5
+
+## Number of seconds until the forceful shutdown operation times out and exits the process.
+## ref: https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-global-section
+##
+shutdown_timeout: 0
+
+## Defines in seconds how often to check GitLab for new builds
+## ref: https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-global-section
+##
+checkInterval: 3
+
+## Configure GitLab Runner's logging level. Available values are: debug, info, warn, error, fatal, panic
+## ref: https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-global-section
+##
+# logLevel:
+
+## Configure GitLab Runner's logging format. Available values are: runner, text, json
+## ref: https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-global-section
+##
+logFormat: json
+
+## Specify whether the runner should start the session server.
+## Defaults to false
+## ref:
+##
+## When sessionServer is enabled, the user can either provide a public publicIP
+## or rely on the external IP auto discovery.
+## When a serviceAccountName is used with the automounting to the pod disabled,
+## we recommend the usage of the publicIP
+sessionServer:
+  enabled: false
+  # annotations: {}
+  # timeout: 1800
+  # internalPort: 8093
+  # externalPort: 9000
+  # publicIP: ""
+  # loadBalancerSourceRanges:
+  #   - 1.2.3.4/32
+
+## For RBAC support:
+rbac:
+  create: true
+  ## Define the generated serviceAccountName when create is set to true
+  ## It defaults to "gitlab-runner.fullname" if not provided
+  # generatedServiceAccountName: ""
+
+  ## Define list of rules to be added to the rbac role permissions.
+  ## Each rule supports the keys:
+  ## - apiGroups: default "" (indicates the core API group) if missing or empty.
+  ## - resources: default "*" if missing or empty.
+  ## - verbs: default "*" if missing or empty.
+  ##
+  ## Read more about the recommended rules on the following link
+  ##
+  ## ref: https://docs.gitlab.com/runner/executors/kubernetes.html#configure-runner-api-permissions
+  ##
+  rules:
+    - apiGroups: [""]
+      resources: ["configmaps", "events", "pods", "pods/attach", "pods/exec", "secrets", "services"]
+      verbs: ["get", "list", "watch", "create", "patch", "update", "delete"]
+
+
+  # - resources: ["configmaps", "events", "pods", "pods/attach", "pods/exec", "secrets", "services"]
+  #   verbs: ["get", "list", "watch", "create", "patch", "update", "delete"]
+  # - apiGroups: [""]
+  #   resources: ["pods/exec"]
+  #   verbs: ["create", "patch", "delete"]
+  # - apiGroups: [""]
+  #   resources: ["pods/log"]
+  #   verbs: ["get"]
+
+  ## Run the gitlab-bastion container with the ability to deploy/manage containers of jobs
+  ## cluster-wide or only within namespace
+  clusterWideAccess: false
+
+
+## Configuration for the Pods that the runner launches for each new job
+##
+runners:
+  # runner configuration, where the multi line string is evaluated as a
+  # template so you can specify helm values inside of it.
+  #
+  # tpl: https://helm.sh/docs/howto/charts_tips_and_tricks/#using-the-tpl-function
+  # runner configuration: https://docs.gitlab.com/runner/configuration/advanced-configuration.html
+  config: |
+    [[runners]]
+      [runners.kubernetes]
+        namespace = "{{.Release.Namespace}}"
+        image = "alpine"
+
+## Configure securitycontext for the main container
+## ref: https://kubernetes.io/docs/concepts/security/pod-security-standards/
+##
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  privileged: false
+  capabilities:
+    drop: ["ALL"]
+
+## Configure securitycontext valid for the whole pod
+## ref: https://kubernetes.io/docs/concepts/security/pod-security-standards/
+##
+podSecurityContext:
+  runAsUser: 100
+  # runAsGroup: 65533
+  fsGroup: 65533
+  # supplementalGroups: [65533]
+

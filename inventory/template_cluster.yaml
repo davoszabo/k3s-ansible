@@ -287,6 +287,17 @@ k3s_admin:
         # <subdomain_name>.example.com
         subdomain_name: "longhorn"
 
+    gitlab:
+      # enabled: true
+      # namespace: gitlab
+      # chart_version: x.x.x
+      runner:
+        enabled: true
+        namespace: gitlab
+        chart_version: 0.67.0
+        url: "https://gitlab.example.com"
+        token: ""
+
     nextcloud:
       enabled: true
       namespace: nextcloud
