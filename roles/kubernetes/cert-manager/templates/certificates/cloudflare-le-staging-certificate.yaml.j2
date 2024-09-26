@@ -1,0 +1,27 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cloudflare-letsencrypt-staging-certificate
+  namespace: {{ cert_manager.namespace }}
+spec:
+  # If different namespaces used for cert-manager and traefik
+{% if cert_manager.namespace != traefik.namespace %}
+  secretTemplate:
+    annotations:
+      reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+      # Control destination namespaces
+      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: {{ traefik.namespace }}
+      # Auto create reflection for matching namespaces
+      reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+      reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: {{ traefik.namespace }}
+{% endif %}
+  secretName: cloudflare-letsencrypt-staging-tls
+  issuerRef:
+    name: cloudflare-letsencrypt-staging-issuer
+    kind: ClusterIssuer
+  commonName: "*.{{ traefik.domain_name }}"
+  dnsNames:
+  - "{{ traefik.domain_name }}"
+  - "*.{{ traefik.domain_name }}"
+

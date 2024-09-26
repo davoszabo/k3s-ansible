@@ -35,3 +35,12 @@
 - name: Include tasks for Cloudflare
   ansible.builtin.include_tasks: dns_providers/cloudflare.yml
   when: cert_manager.dns_provider == 'cloudflare'
+
+- name: Include tasks for Let's Encrypt certificate
+  ansible.builtin.include_tasks: certificate_types/letsencrypt.yml
+  when: cert_manager.certificate.type == 'letsencrypt'
+
+- name: Include tasks for Self signed certificate
+  ansible.builtin.include_tasks: certificate_types/selfsigned.yml
+  when: cert_manager.certificate.type == 'selfsigned'
+

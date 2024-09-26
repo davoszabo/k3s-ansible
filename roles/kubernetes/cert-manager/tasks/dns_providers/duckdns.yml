@@ -3,7 +3,7 @@
 - name: Deploy cert-manager secret from template file
   kubernetes.core.k8s:
     state: present
-    template: 'duckdns/secrets/duckdns-token-secret.yaml.j2'
+    template: 'secrets/duckdns-token-secret.yaml.j2'
 
 - name: Add cert-manager-webhook-duckdns Helm repository
   kubernetes.core.helm_repository:
@@ -19,12 +19,5 @@
     release_namespace: "{{ cert_manager.namespace }}"
     create_namespace: false
     update_repo_cache: true
-    values: "{{ lookup('template', 'duckdns/values.yaml.j2') | from_yaml }}"
+    values: "{{ lookup('template', 'duckdns-webhook/values.yaml.j2') | from_yaml }}"
 
-- name: Include tasks for Let's Encrypt certificate
-  ansible.builtin.include_tasks: certificate_types/letsencrypt.yml
-  when: cert_manager.certificate.type == 'letsencrypt'
-
-- name: Include tasks for Self signed certificate
-  ansible.builtin.include_tasks: certificate_types/selfsigned.yml
-  when: cert_manager.certificate.type == 'selfsigned'

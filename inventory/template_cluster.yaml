@@ -246,11 +246,14 @@ k3s_admin:
         letsencrypt:
           # -- Options: staging | production
           environment: "staging" 
-      # -- Options: duckdns
+      # -- Options: duckdns | cloudflare
       dns_provider: "duckdns"
       duckdns:
         email: "user@email.com"
         token: ""
+      cloudflare:
+        email: "user@email.com"
+        api_token:  ""
     
     cloudflared:
       enabled: true
