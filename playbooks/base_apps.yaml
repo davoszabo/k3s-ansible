@@ -40,4 +40,8 @@
       when: nfs_client.enabled
       tags:
         - nfs-client
+    - role: qbittorrent
+      when: qbittorrent.enabled
+      tags:
+        - qbittorrent
 

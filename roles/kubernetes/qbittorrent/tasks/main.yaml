@@ -1,0 +1,35 @@
+---
+
+- name: Create namespace "{{ qbittorrent.namespace }}"
+  kubernetes.core.k8s:
+    name: "{{ qbittorrent.namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Add qbittorrent Helm repository
+  kubernetes.core.helm_repository:
+    name: "gabe565"
+    url: "https://charts.gabe565.com"
+    state: present
+
+- name: Deploy storage manifests from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'storage.yaml.j2'
+
+- name: Deploy qbittorrent loaded from template (helm)
+  kubernetes.core.helm:
+    name: qbittorrent
+    chart_ref: gabe565/qbittorrent
+    chart_version: "{{ qbittorrent.chart_version }}"
+    release_namespace: "{{ qbittorrent.namespace }}"
+    create_namespace: false
+    update_repo_cache: true
+    values: "{{ lookup('template', 'values.yaml.j2') | from_yaml }}"
+
+- name: Deploy IngressRoute from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'ingressRoute.yaml.j2'
+

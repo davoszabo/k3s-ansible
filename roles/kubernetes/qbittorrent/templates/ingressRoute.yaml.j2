@@ -1,0 +1,21 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: qbittorrent-dashboard
+  namespace: {{ qbittorrent.namespace }}
+  annotations: 
+    kubernetes.io/ingress.class: {{ traefik.ingress_class }}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{ qbittorrent.subdomain_name }}.{{ traefik.domain_name }}`)
+      kind: Rule
+{% if authentik.enabled %}
+      middlewares:
+        - name: authentik-forwardauth
+          namespace: {{ authentik.namespace }}
+{% endif %}
+      services:
+        - name: qbittorrent
+          port: 8080

@@ -362,3 +362,19 @@ k3s_admin:
       path: /export/shared
       group_id: "100"
 
+        
+    qbittorrent:
+      enabled: true
+      namespace: qbittorrent
+      chart_version: 0.3.7
+      data:
+        size: 500Gi
+        # Use the GID that your users have access to!
+        group_id: "100"
+      # Only NFS supported yet for storage provisioning
+      nfs:
+        enabled: true
+        server: 192.168.0.30
+        path: /export/shared
+      subdomain_name: "qbittorrent"
+        

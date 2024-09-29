@@ -1,0 +1,96 @@
+#
+# IMPORTANT NOTE
+#
+# This chart inherits from our common library chart. You can check the default values/options here:
+# https://github.com/bjw-s/helm-charts/blob/a081de5/charts/library/common/values.yaml
+#
+
+image:
+  # -- image repository
+  repository: ghcr.io/linuxserver/qbittorrent
+  # -- image pull policy
+  pullPolicy: IfNotPresent
+  # -- image tag
+  tag: 4.6.7
+
+# -- environment variables. [[ref]](https://github.com/linuxserver/docker-qbittorrent#parameters)
+# @default -- See [values.yaml](./values.yaml)
+env:
+  # -- Set the container timezone
+  TZ: UTC
+
+# -- Configures service settings for the chart.
+# @default -- See [values.yaml](./values.yaml)
+service:
+  main:
+    ports:
+      http:
+        port: 8080
+  bittorrent:
+    enabled: false
+    ports:
+      bittorrent:
+        enabled: true
+        port: 6881
+        protocol: TCP
+
+ingress:
+  # -- Enable and configure ingress settings for the chart under this key.
+  # @default -- See [values.yaml](./values.yaml)
+  main:
+    enabled: false
+    # hosts:
+    #   - host: chart-example.local
+    #     paths:
+    #       - path: /
+    # tls:
+    #   - secretName: chart-example.local-tls
+    #     hosts:
+    #       - chart-example.local
+
+securityContext:
+  runAsGroup: {{ qbittorrent.data.group_id }}
+
+# podSecurityContext:
+#   fsGroup: {{ qbittorrent.data.group_id }}
+#   fsGroupChangePolicy: "OnRootMismatch"
+
+# -- Configure persistence settings for the chart under this key.
+# Set `enabled` to `true' to create persistant volumes for each of these.
+# @default -- See values.yaml
+persistence:
+  # Configuration files
+  config:
+    enabled: true
+    retain: true
+    storageClass: ""
+    accessMode: ReadWriteOnce
+    size: 1Gi
+
+  # Optional - Download location - Allows dedicated volume for storage of downloaded files.
+  #downloads:
+  #  enabled: true
+  #  mountPath: /download
+  #  storageClass: "-"
+  #  existingClaim: "qbittorrent-downloads-pvc"
+  #  subPath: "downloads"
+
+  ## Optional - Allows linking to an existing media library scraping location.
+  #media:
+  #  enabled: true
+  #  mountPath: /media
+  #  storageClass: "-"
+  #  existingClaim: "qbittorrent-media-pvc"
+  #  subPath: "media"
+
+  nfs:
+    enabled: {{ qbittorrent.nfs.enabled }}
+    type: pvc
+    existingClaim: qbittorrent-nfs-pvc
+    subPath:
+      - path: media
+        mountPath: /nfs/media
+        # /downloads WON'T WORK FOR mountPath, the group id is buggy !!!
+      - path: downloads
+        mountPath: /nfs/download
+
