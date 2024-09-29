@@ -36,4 +36,8 @@
       when: argocd.image_updater.enabled
       tags:
         - argocd-image-updater
+    - role: nfs-client
+      when: nfs_client.enabled
+      tags:
+        - nfs-client
 

@@ -352,3 +352,13 @@ k3s_admin:
       redis:
         enabled: true
         password: "SOME-SUPER-SECRET-PASSWORD"
+        
+    # Experimental only
+    nfs_client:
+      enabled: true
+      namespace: nfs-client
+      chart_version: 4.0.18
+      server: 192.168.0.30
+      path: /export/shared
+      group_id: "100"
+
