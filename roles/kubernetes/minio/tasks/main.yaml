@@ -1,0 +1,57 @@
+---
+
+- name: Create namespace "{{ minio.namespace }}"
+  kubernetes.core.k8s:
+    name: "{{ minio.namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Add minio Helm repository
+  kubernetes.core.helm_repository:
+    name: "bitnami"
+    url: "https://charts.bitnami.com/bitnami"
+    state: present
+
+- name: Deploy storage manifests from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'storage.yaml.j2'
+
+# HACK workaround, by default OIDC cannot be enabled, only manually
+- name: Deploy OIDC setup CM manifests from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'setup-oidc-cm.yaml.j2'
+  when: minio.openid.enabled
+
+- name: Deploy secret manifests from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'admin-secret.yaml.j2'
+
+- name: Read CA certificate file
+  set_fact:
+    ca_cert_file: "{{ lookup('file', cert_path_global) }}"
+
+- name: Deploy CA secret manifests from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'ca-cert-secret.yaml.j2'
+  when: cert_path_global != ''
+
+- name: Deploy minio loaded from template (helm)
+  kubernetes.core.helm:
+    name: minio
+    chart_ref: bitnami/minio
+    chart_version: "{{ minio.chart_version }}"
+    release_namespace: "{{ minio.namespace }}"
+    create_namespace: false
+    update_repo_cache: true
+    values: "{{ lookup('template', 'values.yaml.j2') | from_yaml }}"
+
+- name: Deploy IngressRoute from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'ingressRoute.yaml.j2'
+

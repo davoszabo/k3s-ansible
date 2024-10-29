@@ -28,3 +28,8 @@
     state: present
     template: 'dashboard/ingressRoute.yaml.j2'
   when: longhorn.dashboard.enabled
+
+- name: Import S3 bucket related tasks
+  ansible.builtin.include_tasks: s3_bucket.yaml
+  when: longhorn.minio_backup.enabled
+

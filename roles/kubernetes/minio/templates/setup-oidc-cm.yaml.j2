@@ -1,0 +1,18 @@
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: {{ minio.namespace }}
+  name: setup-oidc-script
+data:
+  setup-oidc.sh: |
+    #!/bin/bash
+
+    echo "Enable OIDC in configuration"
+    mc idp openid enable local --insecure
+    echo "Restart service ..."
+    mc admin service restart local --insecure --wait --json
+    sleep 5;
+    echo "OIDC configuration complete."
+

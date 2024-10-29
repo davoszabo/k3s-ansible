@@ -44,6 +44,10 @@
       when: qbittorrent.enabled
       tags:
         - qbittorrent
+    - role: minio
+      when: minio.enabled
+      tags:
+        - minio
     - role: home-assistant
       when: home_assistant.enabled
       tags:

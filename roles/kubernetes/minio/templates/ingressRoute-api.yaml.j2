@@ -1,0 +1,16 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: minio-api
+  namespace: {{ minio.namespace }}
+  annotations: 
+    kubernetes.io/ingress.class: {{ traefik.ingress_class }}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{ minio.subdomain_name }}-api.{{ traefik.domain_name }}`)
+      kind: Rule
+      services:
+        - name: minio
+          port: 9000

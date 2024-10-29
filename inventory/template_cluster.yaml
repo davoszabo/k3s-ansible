@@ -289,6 +289,11 @@ kubernetes:
         enabled: true
         # <subdomain_name>.example.com
         subdomain_name: "longhorn"
+      # Enable minio to use it as S3 backup
+      minio_backup:
+        enabled: true
+        key: ""
+        secret: ""
 
     gitlab:
       # enabled: true
@@ -378,6 +383,26 @@ kubernetes:
         path: /export/shared
       subdomain_name: "qbittorrent"
         
+
+    minio:
+      enabled: true
+      namespace: minio
+      chart_version: 14.7.13
+      # This is for WebUI
+      subdomain_name: "minio"
+      # To access the bucket via API the endpoint will be the "subdomain_name"-api.domain.com
+      admin_user:
+        username: minioadmin
+        password: "SOME-SUPER-SECRET-PASSWORD"
+      data:
+        # The worker node's mounted external drive
+        path: /pool/minio
+        # The name of the worker node which has a mounted external drive (HDD or SSD)
+        node_name: node-name
+        # Size in Gi
+        size: 200Gi
+      openid:
+        enabled: true
 
     home_assistant:
       enabled: true

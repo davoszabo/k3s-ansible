@@ -1,0 +1,66 @@
+image:
+  registry: docker.io
+  repository: bitnami/minio
+
+mode: standalone
+
+persistence:
+  enabled: true
+  storageClass: "local-storage"
+  existingClaim: "minio-data-pvc"
+
+volumePermissions:
+  enabled: true
+
+auth:
+  existingSecret: "minio-admin-secret"
+  rootUserSecretKey: "rootUser"
+  rootPasswordSecretKey: "rootPassword"
+
+extraVolumes:
+{% if cert_path_global != '' %}
+  - name: cert-secret
+    secret:
+      secretName: cert-secret
+      items:
+        - key: public.crt
+          path: CAs/public.crt
+{% endif %}
+{% if minio.openid.enabled %}
+  - name: setup-oidc-script
+    configMap:
+      name: setup-oidc-script
+      defaultMode: 0777
+{% else %}
+  - name: scripts-empty-dir
+    emptyDir: {}
+{% endif %}
+
+extraVolumeMounts:
+{% if cert_path_global != '' %}
+  - name: cert-secret
+    mountPath: /certs
+    readOnly: true
+{% endif %}
+{% if minio.openid.enabled %}
+  - name: setup-oidc-script
+    mountPath: /scripts/setup-oidc.sh
+    subPath: setup-oidc.sh
+{% else %}
+  - name: scripts-empty-dir
+    mountPath: /scripts
+{% endif %}
+
+{% if minio.openid.enabled %}
+customStartupProbe:
+  exec:
+    command:
+      - /scripts/setup-oidc.sh
+  # Wait for Authentik
+  initialDelaySeconds: 300
+  periodSeconds: 30
+  timeoutSeconds: 600
+  successThreshold: 1
+  failureThreshold: 20
+{% endif %}
+
