@@ -209,7 +209,7 @@ k3s_cluster:
 
 # For 'kubectl' and 'helm' commands
 
-k3s_admin:
+kubernetes:
   hosts:
     localhost:
   vars:

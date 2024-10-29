@@ -1,0 +1,20 @@
+---
+
+# NOT TRUSTED CERTIFICATE HELPER VARIABLES
+
+cert_type: "{{ cert_manager.certificate.type }}"
+is_letsencrypt_staging: "{{ cert_manager.certificate.letsencrypt.environment == 'staging' }}"
+
+cert_path_selfsigned: "{{ role_path + '/../cert-manager/files/certs/' + cert_manager.certificate.selfsigned.cert_name }}.crt"
+cert_path_letsencrypt: "{{ role_path + '/../cert-manager/files/certs/letsencrypt-stg-int-r3.pem' }}"
+
+# Use conditional logic to set cert_path
+cert_path_global: >-
+  {% if cert_type == 'selfsigned' %}
+    {{- cert_path_selfsigned -}}
+  {% elif cert_type == 'letsencrypt' and is_letsencrypt_staging %}
+    {{ cert_path_letsencrypt }}
+  {% else %}
+    ''  # Empty string if no valid condition
+  {% endif %}
+

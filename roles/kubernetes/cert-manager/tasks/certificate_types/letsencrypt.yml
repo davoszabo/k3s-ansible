@@ -9,3 +9,10 @@
   kubernetes.core.k8s:
     state: present
     template: 'certificates/{{ cert_manager.dns_provider }}-le-{{ cert_manager.certificate.letsencrypt.environment }}-certificate.yaml.j2'
+
+- name: Download staging RSA lets encrypt certificate
+  ansible.builtin.get_url:
+    url: https://letsencrypt.org/certs/staging/letsencrypt-stg-int-r3.pem
+    dest: "{{ role_path }}/files/certs"
+  when: cert_type == 'letsencrypt' and is_letsencrypt_staging
+

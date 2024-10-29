@@ -1,7 +1,7 @@
 ---
 
 - name: Check if Helm is installed
-  hosts: k3s_admin
+  hosts: kubernetes
   connection: local
   tasks:
     - name: Checking Helm version
@@ -11,7 +11,7 @@
       changed_when: false
 
 - name: Include Helm install roles
-  hosts: k3s_admin
+  hosts: kubernetes
   connection: local
   gather_facts: false
   tasks:
