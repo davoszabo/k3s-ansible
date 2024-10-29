@@ -378,3 +378,13 @@ k3s_admin:
         path: /export/shared
       subdomain_name: "qbittorrent"
         
+
+    home_assistant:
+      enabled: true
+      namespace: home-assistant
+      chart_version: 0.2.82
+      # This is for WebUI
+      subdomain_name: "home-assistant"
+      openid:
+        enabled: true
+

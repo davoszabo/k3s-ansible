@@ -1,0 +1,46 @@
+#jinja2:variable_start_string:'[%', variable_end_string:'%]', trim_blocks: False
+replicaCount: 1
+
+image:
+  repository: ghcr.io/home-assistant/home-assistant
+  pullPolicy: IfNotPresent
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 5Gi
+  storageClass: ""
+
+configuration:
+  enabled: true
+  forceInit: true
+  # trusted_proxies:
+    # - [% traefik.lb_ip %]
+
+  templateConfig: |-
+    default_config:
+    
+    http:
+      use_x_forwarded_for: true
+      trusted_proxies:
+        {{- range .Values.configuration.trusted_proxies }}
+        - {{ . }}
+        {{- end }}
+{% if home_assistant.openid.enabled %}
+    auth_header:
+      username_header: X-ak-hass-user
+      allow_bypass_login: true
+      debug: false
+{% endif %}
+    # logger:
+    #   default: info
+    #   logs:
+    #     custom_components.auth_header: debug
+    # Load frontend themes from the themes folder
+    frontend:
+      themes: !include_dir_merge_named themes
+    
+    automation: !include automations.yaml
+    script: !include scripts.yaml
+    scene: !include scenes.yaml
+

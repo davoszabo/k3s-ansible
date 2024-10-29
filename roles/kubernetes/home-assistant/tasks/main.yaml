@@ -1,0 +1,30 @@
+---
+
+- name: Create namespace "{{ home_assistant.namespace }}"
+  kubernetes.core.k8s:
+    name: "{{ home_assistant.namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Add home_assistant Helm repository
+  kubernetes.core.helm_repository:
+    name: "pajikos"
+    url: "http://pajikos.github.io/home-assistant-helm-chart/"
+    state: present
+
+- name: Deploy home_assistant loaded from template (helm)
+  kubernetes.core.helm:
+    name: home-assistant
+    chart_ref: pajikos/home-assistant
+    chart_version: "{{ home_assistant.chart_version }}"
+    release_namespace: "{{ home_assistant.namespace }}"
+    create_namespace: false
+    update_repo_cache: true
+    values: "{{ lookup('template', 'values.yaml.j2') | from_yaml }}"
+
+- name: Deploy IngressRoute from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'ingressRoute.yaml.j2'
+

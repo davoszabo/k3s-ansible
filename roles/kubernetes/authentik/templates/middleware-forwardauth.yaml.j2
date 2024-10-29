@@ -19,3 +19,6 @@ spec:
             - X-authentik-meta-provider
             - X-authentik-meta-app
             - X-authentik-meta-version
+{% if home_assistant.enabled %}
+            - X-ak-hass-user
+{% endif %}

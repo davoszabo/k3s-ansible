@@ -1,0 +1,22 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: home-assistant-dashboard
+  namespace: {{ home_assistant.namespace }}
+  annotations: 
+    kubernetes.io/ingress.class: {{ traefik.ingress_class }}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{ home_assistant.subdomain_name }}.{{ traefik.domain_name }}`)
+      kind: Rule
+{% if authentik.enabled and home_assistant.openid.enabled %}
+      middlewares:
+        - name: authentik-forwardauth
+          namespace: {{ authentik.namespace }}
+{% endif %}
+      services:
+        - name: home-assistant
+          port: 8080
+

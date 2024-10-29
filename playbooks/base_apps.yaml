@@ -44,4 +44,9 @@
       when: qbittorrent.enabled
       tags:
         - qbittorrent
+    - role: home-assistant
+      when: home_assistant.enabled
+      tags:
+        - home-assistant
+
 
