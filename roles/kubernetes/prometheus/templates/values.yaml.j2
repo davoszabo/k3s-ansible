@@ -1,0 +1,85 @@
+alertmanager:
+  enabled: true
+
+grafana:
+  enabled: {{ prometheus.grafana.enabled }}
+  assertNoLeakedSecrets: false
+  grafana.ini:
+    auth:
+      signout_redirect_url: {{ prometheus.grafana.openid.signout_redirect_url }}
+      oauth_auto_login: {{ prometheus.grafana.openid.oauth_auto_login }}
+    auth.generic_oauth:
+      name: {{ prometheus.grafana.openid.name }}
+      enabled: {{ prometheus.grafana.openid.enabled }}
+      client_id: {{ prometheus.grafana.openid.client_id }}
+      client_secret: {{ prometheus.grafana.openid.client_secret }}
+      scopes: {{ prometheus.grafana.openid.scopes }}
+      auth_url: {{ prometheus.grafana.openid.auth_url }}
+      token_url: {{ prometheus.grafana.openid.token_url }}
+      api_url: {{ prometheus.grafana.openid.api_url }}
+{% if is_cert_untrusted %}
+      tls_client_ca: /etc/grafana/ssl/ca-cert.crt
+{% endif %}
+    server:
+      root_url: "https://{{ prometheus.grafana.subdomain_name + '.' + traefik.domain_name }}"
+{% if is_cert_untrusted %}
+  extraSecretMounts:
+    - name: ca-cert-secret
+      mountPath: /etc/grafana/ssl/ca-cert.crt
+      subPath: ca-cert.crt
+      secretName: ca-cert-secret
+      readOnly: true
+      optional: false
+{% endif %}
+
+kubeApiServer:
+  enabled: true
+
+kubelet:
+  enabled: true
+  namespace: kube-system
+
+kubeControllerManager:
+  enabled: true
+
+  ## If your kube controller manager is not deployed as a pod, specify IPs it can be found on
+  ##
+  endpoints: []
+  # - 10.141.4.22
+  # - 10.141.4.23
+  # - 10.141.4.24
+
+kubeEtcd:
+  enabled: true
+
+  ## If your etcd is not deployed as a pod, specify IPs it can be found on
+  ##
+  endpoints: []
+  # - 10.141.4.22
+  # - 10.141.4.23
+  # - 10.141.4.24
+
+kubeScheduler:
+  enabled: true
+
+  ## If your kube scheduler is not deployed as a pod, specify IPs it can be found on
+  ##
+  endpoints: []
+  # - 10.141.4.22
+  # - 10.141.4.23
+  # - 10.141.4.24
+
+kubeProxy:
+  enabled: true
+
+  ## If your kube proxy is not deployed as a pod, specify IPs it can be found on
+  ##
+  endpoints: []
+  # - 10.141.4.22
+  # - 10.141.4.23
+  # - 10.141.4.24
+
+prometheus:
+  enabled: true
+
+

@@ -383,6 +383,24 @@ kubernetes:
         path: /export/shared
       subdomain_name: "qbittorrent"
         
+    prometheus:
+      enabled: true
+      namespace: monitoring
+      chart_version: 63.1.0
+      grafana:
+        enabled: true
+        subdomain_name: "grafana"
+        openid:
+          enabled: true
+          name: authentik
+          oauth_auto_login: true
+          client_id: ""
+          client_secret: ""
+          scopes: "openid profile email"
+          auth_url: ""
+          token_url: ""
+          api_url: ""
+          signout_redirect_url: ""
 
     minio:
       enabled: true

@@ -1,0 +1,17 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: grafana-dashboard
+  namespace: {{ prometheus.namespace }}
+  annotations:
+    kubernetes.io/ingress.class: {{ traefik.ingress_class }}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{ prometheus.grafana.subdomain_name }}.{{ traefik.domain_name }}`)
+      kind: Rule
+      services:
+        - name: prometheus-grafana
+          port: 80
+

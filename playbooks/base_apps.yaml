@@ -44,6 +44,10 @@
       when: qbittorrent.enabled
       tags:
         - qbittorrent
+    - role: prometheus
+      when: prometheus.enabled
+      tags:
+        - prometheus
     - role: minio
       when: minio.enabled
       tags:
