@@ -3,3 +3,4 @@ inventory = inventory/your_inventory
 roles_path = roles/k3s_cluster:roles/kubernetes
 collections_path = collections/
 vault_password_file = .file_name
+stdout_callback = yaml

@@ -317,12 +317,22 @@ kubernetes:
         enabled: true
         namespace: argocd
         chart_version: 0.11.0
+        registries:
+          - name: GitLab Container Registry
+            api_url: https://registry.gitlab.com
+            prefix: gcr.io
+            ping: no
+            credentials: pullsecret:argocd/regcred
         private_registry:
           enabled: true
+          # Each project (namespace) should have the same regcred, add them accordingly
+          namespaces:
+            - argocd
+          # This is where images are pulled from
           secret:
             registry_name: "registry.gitlab.com/group/project"
             username: ""
-            # Gather Personal Access Token with the proper access
+            # Gather Personal Access Token with proper access
             token: ""
             email: ""
 
@@ -367,7 +377,6 @@ kubernetes:
       path: /export/shared
       group_id: "100"
 
-        
     qbittorrent:
       enabled: true
       namespace: qbittorrent

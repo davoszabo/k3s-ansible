@@ -10,7 +10,10 @@
 - name: Deploy registry-secret from template file
   kubernetes.core.k8s:
     state: present
-    template: 'registry-secret.yaml.j2'
+    template: 'regcred-secret.yaml.j2'
+  loop: "{{ argocd.image_updater.private_registry.namespaces }}"
+  loop_control:
+    loop_var: loop_item
   when: argocd.image_updater.private_registry.enabled
 
 - name: Add argo Helm repository

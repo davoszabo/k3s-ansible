@@ -6,6 +6,10 @@
     url: "https://argoproj.github.io/argo-helm"
     state: present
 
+- name: Read CA certificate file
+  set_fact:
+    ca_cert_file: "{{ lookup('file', cert_path_global) }}"
+
 - name: Deploy argo-cd loaded from template (helm)
   kubernetes.core.helm:
     name: argocd
