@@ -313,6 +313,18 @@ kubernetes:
       dashboard:
         enabled: true
         subdomain_name: "argocd"
+      oidc:
+        enabled: true
+        name: Authentik
+        issuer: https://authentik.domain.com/application/o/argocd/
+        clientID: ""
+        clientSecret: ""
+        requestedScopes:
+          - openid
+          - profile
+          - email
+        rbac:
+          admin_group_name: authentik_admins
       image_updater:
         enabled: true
         namespace: argocd
