@@ -1,0 +1,21 @@
+---
+
+- name: Check if Terraform is installed
+  hosts: terraform
+  connection: local
+  tasks:
+    - name: Checking Terraform version
+      ansible.builtin.command: "terraform -v"
+      register: terraform_version
+      failed_when: terraform_version.rc != 0 and helm_version.stderr != ""
+      changed_when: false
+
+- name: Include Helm install roles
+  hosts: terraform
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Include roles
+      ansible.builtin.include_role:
+        name: provision
+

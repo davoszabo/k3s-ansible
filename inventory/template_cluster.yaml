@@ -207,6 +207,34 @@ k3s_cluster:
       # HTTPS_PROXY: "http://proxy.domain.local:3128"
       # NO_PROXY: "*.domain.local,127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
 
+# For 'terraform' commands
+
+terraform:
+  hosts:
+    localhost:
+  vars:
+    state: "present"
+    # -- Options: proxmox
+    provider: proxmox
+    proxmox: 
+      api_url: "https://192.168.0.2:8006/api2/json"
+      api_token_id: "terraform@pam!terraform-token"
+      api_token_secret: ""
+      target_node: "pve"
+      # Start ID for VMs
+      vmid: 900
+      template_name: "ubuntu24-cloudinit"
+      gateway: "192.168.0.1"
+      vm_cores: 2
+      vm_memory: 2048
+      storage_pool: "local"
+      storage_size: "4G"
+      ciuser: root
+      cipassword: password
+      ssh_public_key: |
+        ssh-rsa ASDASD root@host
+      name_prefix: "k3s-default"
+
 # For 'kubectl' and 'helm' commands
 
 kubernetes:

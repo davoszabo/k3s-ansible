@@ -14,6 +14,11 @@ Build a k3s Kubernetes cluster using Ansible. The goal here is to install a HA K
 - [`netaddr` package](https://pypi.org/project/netaddr/) must be available to Ansible. If you have installed Ansible via apt, this is already taken care of. If you have installed Ansible via `pip`, make sure to install `netaddr` into the respective virtual environment.
 - `server` and `worker` nodes should have passwordless SSH access, if not you can supply arguments to provide credentials `--ask-pass --ask-become-pass` to each command.
 
+### Terraform setup
+It is possible to use Terraform to create VMs for the k3s cluster. You need to install Terraform on your system. To use it in a playbook, add this collection: `community.general.terraform`, but it is already specified inside the `collections/requirements.yml`. The supported providers are:
+
+- Proxmox (cloud-init)
+
 > [!NOTE]  
 > There will be a `.devcontainer` feature added to this repo to make the development environment uniform and portable.
 
@@ -36,9 +41,16 @@ Start provisioning of the cluster using the following command:
 > [!WARNING]
 > The following steps might not work properly, because currently there are no deployment tests present that could identify errors due to new changes. The issue is being resolved soon!
 
+If you don't want setup VMs manually on your server and curios about auto-provisioning VMs with Terraform, go ahead and try this:
+```
+ansible-playbook playbooks/terraform-provision.yaml
+```
+
+Install k3s cluster on the servers:
 ```
 ansible-playbook playbooks/k3s_install.yaml
 ```
+
 After the deployment, the control plane will be accessible via virtual ip-address which is defined as **apiserver_endpoint**.
 
 The installation will trigger basic ingress control setups (Traefik), and deploy the enabled applications.
