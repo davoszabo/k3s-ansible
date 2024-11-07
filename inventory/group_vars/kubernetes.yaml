@@ -13,7 +13,7 @@ cert_path_global: >-
   {% if cert_type == 'selfsigned' %}
     {{- cert_path_selfsigned -}}
   {% elif cert_type == 'letsencrypt' and is_letsencrypt_staging %}
-    {{ cert_path_letsencrypt }}
+    {{- cert_path_letsencrypt -}}
   {% else %}
     ''  # Empty string if no valid condition
   {% endif %}

@@ -1,0 +1,42 @@
+- name: Add k3s_servers and k3s_workers to nodes
+  set_fact:
+    nodes: "{{ nodes | default([]) + (groups[item.group] | map('extract', hostvars) | json_query('[].{ip: ansible_host, name: inventory_hostname}') | map('combine', {'type': item.type})) }}"
+  loop:
+    - group: k3s_servers
+      type: srv
+    - group: k3s_workers
+      type: wrk
+
+- name: Provision VMs in Proxmox with Terraform
+  community.general.terraform:
+    project_path: "{{ role_path }}/files"
+    state: "{{ state }}"
+    force_init: true
+    complex_vars: true
+    variables:
+      proxmox_api_url: "{{ proxmox.api_url }}"
+      proxmox_api_token_id: "{{ proxmox.api_token_id }}"
+      proxmox_api_token_secret: "{{ proxmox.api_token_secret }}"
+      proxmox_target_node: "{{ proxmox.target_node }}"
+      vmid: "{{ proxmox.vmid }}"
+      template_name: "{{ proxmox.template_name }}"
+      gateway: "{{ proxmox.gateway }}"
+      vm_cores: "{{ proxmox.vm_cores }}"
+      vm_memory: "{{ proxmox.vm_memory }}"
+      storage_pool: "{{ proxmox.storage_pool }}"
+      storage_size: "{{ proxmox.storage_size }}"
+      ciuser: "{{ proxmox.ciuser }}"
+      cipassword: "{{ proxmox.cipassword }}"
+      ssh_public_key: "{{ proxmox.ssh_public_key }}"
+      name_prefix: "{{ proxmox.name_prefix }}"
+      nodes: "{{ nodes }}"
+  register: tf_output
+  when: provider == 'proxmox'
+
+- name: Display Terraform output
+  debug:
+    var: tf_output.stdout
+
+- name: Debug output to check structure
+  debug:
+    var: nodes
