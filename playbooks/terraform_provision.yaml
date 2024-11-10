@@ -10,7 +10,7 @@
       failed_when: terraform_version.rc != 0 and helm_version.stderr != ""
       changed_when: false
 
-- name: Include Helm install roles
+- name: Provision with Terraform
   hosts: terraform
   connection: local
   gather_facts: false

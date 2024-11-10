@@ -1,6 +1,6 @@
 [defaults]
 inventory = inventory/your_inventory
-roles_path = roles/k3s_cluster:roles/kubernetes
+roles_path = roles/k3s_cluster:roles/kubernetes:roles/terraform
 collections_path = collections/
 vault_password_file = .file_name
 stdout_callback = yaml
