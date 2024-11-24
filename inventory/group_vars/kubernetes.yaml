@@ -18,3 +18,5 @@ cert_path_global: >-
     ''  # Empty string if no valid condition
   {% endif %}
 
+is_cert_untrusted: "{{ true if cert_type == 'selfsigned' or (cert_type == 'letsencrypt' and is_letsencrypt_staging) else false }}"
+
