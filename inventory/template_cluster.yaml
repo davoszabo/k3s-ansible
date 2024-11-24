@@ -289,6 +289,12 @@ kubernetes:
       chart_version: 0.1.1
       tunnel_token: ""
 
+    rancher:
+      enabled: true
+      namespace: cattle-system
+      chart_version: 2.10.0
+      subdomain_name: rancher
+    
     authentik:
       enabled: true
       namespace: iam

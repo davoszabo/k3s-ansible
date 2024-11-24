@@ -1,0 +1,12 @@
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tls-ca
+  namespace: {{ rancher.namespace }}
+type: Opaque
+data:
+  cacerts.pem: |
+    {{ ca_cert_file | b64encode | indent(4) }}
+

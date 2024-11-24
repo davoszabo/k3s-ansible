@@ -1,0 +1,41 @@
+---
+
+- name: Create namespace "{{ rancher.namespace }}"
+  kubernetes.core.k8s:
+    name: "{{ rancher.namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Read CA certificate file
+  set_fact:
+    ca_cert_file: "{{ lookup('file', cert_path_global) }}"
+
+- name: Deploy CA secret manifests from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'tls-ca.yaml.j2'
+  when: cert_path_global != ''
+
+- name: Add rancher Helm repository
+  kubernetes.core.helm_repository:
+    name: "rancher-stable"
+    url: "https://releases.rancher.com/server-charts/stable"
+    state: present
+
+- name: Deploy rancher loaded from template (helm)
+  kubernetes.core.helm:
+    name: rancher-stable
+    chart_ref: rancher-stable/rancher
+    chart_version: "{{ rancher.chart_version }}"
+    release_namespace: "{{ rancher.namespace }}"
+    create_namespace: false
+    update_repo_cache: true
+    values: "{{ lookup('template', 'values.yaml.j2') | from_yaml }}"
+
+- name: Deploy IngressRoute from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'ingressRoute.yaml.j2'
+
+
