@@ -1,0 +1,7 @@
+{
+    "build": { "dockerfile": "Dockerfile" },
+    "mounts": [
+        "source=${localEnv:HOME}/.kube,target=/home/vscode/.kube,type=bind,consistency=cached",
+    ]
+}
+
