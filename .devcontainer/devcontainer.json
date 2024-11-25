@@ -2,6 +2,7 @@
     "build": { "dockerfile": "Dockerfile" },
     "mounts": [
         "source=${localEnv:HOME}/.kube,target=/home/vscode/.kube,type=bind,consistency=cached",
+        "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached",
     ]
 }
 
