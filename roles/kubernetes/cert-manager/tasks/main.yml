@@ -14,7 +14,7 @@
 
 - name: Add cert-manager Helm repository
   kubernetes.core.helm_repository:
-    name: "cert-manager"
+    name: "jetstack"
     url: "https://charts.jetstack.io"
     state: present
 

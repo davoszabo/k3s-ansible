@@ -16,6 +16,10 @@
   connection: local
   gather_facts: false
   roles:
+    - role: rancher
+      when: rancher.enabled
+      tags:
+        - rancher
     - role: authentik
       when: authentik.enabled
       tags:

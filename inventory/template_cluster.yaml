@@ -242,7 +242,7 @@ kubernetes:
     localhost:
   vars:
     traefik:
-      enabled: true
+      enabled: false
       namespace: iam
       chart_version: v26.1.0
       # IP should be in the MetalLB/kube-vip-cloud-provider range
@@ -260,7 +260,7 @@ kubernetes:
           secret: "BASE64-SECRET"
     
     cert_manager:
-      enabled: true
+      enabled: false
       namespace: iam
       chart_version: v1.14.3
       certificate:
@@ -284,13 +284,19 @@ kubernetes:
         api_token:  ""
     
     cloudflared:
-      enabled: true
+      enabled: false
       namespace: cloudflared
       chart_version: 0.1.1
       tunnel_token: ""
 
+    rancher:
+      enabled: false
+      namespace: cattle-system
+      chart_version: 2.10.0
+      subdomain_name: rancher
+    
     authentik:
-      enabled: true
+      enabled: false
       namespace: iam
       chart_version: 2024.4.2
       # <subdomain_name>.example.com
@@ -310,7 +316,7 @@ kubernetes:
         enabled: true
     
     longhorn:
-      enabled: true
+      enabled: false
       namespace: longhorn-system
       chart_version: 1.6.0
       dashboard:
@@ -319,23 +325,23 @@ kubernetes:
         subdomain_name: "longhorn"
       # Enable minio to use it as S3 backup
       minio_backup:
-        enabled: true
+        enabled: false
         key: ""
         secret: ""
 
     gitlab:
-      # enabled: true
+      # enabled: false
       # namespace: gitlab
       # chart_version: x.x.x
       runner:
-        enabled: true
+        enabled: false
         namespace: gitlab
         chart_version: 0.67.0
         url: "https://gitlab.example.com"
         token: ""
 
     argocd:
-      enabled: true
+      enabled: false
       namespace: argocd
       chart_version: 7.3.11
       dashboard:
@@ -364,7 +370,7 @@ kubernetes:
             ping: no
             credentials: pullsecret:argocd/regcred
         private_registry:
-          enabled: true
+          enabled: false
           # Each project (namespace) should have the same regcred, add them accordingly
           namespaces:
             - argocd
@@ -377,7 +383,7 @@ kubernetes:
             email: ""
 
     nextcloud:
-      enabled: true
+      enabled: false
       namespace: nextcloud
       chart_version: 4.6.6
       # <subdomain_name>.example.com
@@ -410,7 +416,7 @@ kubernetes:
         
     # Experimental only
     nfs_client:
-      enabled: true
+      enabled: false
       namespace: nfs-client
       chart_version: 4.0.18
       server: 192.168.0.30
@@ -418,7 +424,7 @@ kubernetes:
       group_id: "100"
 
     qbittorrent:
-      enabled: true
+      enabled: false
       namespace: qbittorrent
       chart_version: 0.3.7
       data:
@@ -427,20 +433,20 @@ kubernetes:
         group_id: "100"
       # Only NFS supported yet for storage provisioning
       nfs:
-        enabled: true
+        enabled: false
         server: 192.168.0.30
         path: /export/shared
       subdomain_name: "qbittorrent"
         
     prometheus:
-      enabled: true
+      enabled: false
       namespace: monitoring
       chart_version: 63.1.0
       grafana:
         enabled: true
         subdomain_name: "grafana"
         openid:
-          enabled: true
+          enabled: false
           name: authentik
           oauth_auto_login: true
           client_id: ""
@@ -452,7 +458,7 @@ kubernetes:
           signout_redirect_url: ""
 
     minio:
-      enabled: true
+      enabled: false
       namespace: minio
       chart_version: 14.7.13
       # This is for WebUI
@@ -469,14 +475,14 @@ kubernetes:
         # Size in Gi
         size: 200Gi
       openid:
-        enabled: true
+        enabled: false
 
     home_assistant:
-      enabled: true
+      enabled: false
       namespace: home-assistant
       chart_version: 0.2.82
       # This is for WebUI
       subdomain_name: "home-assistant"
       openid:
-        enabled: true
+        enabled: false
 

@@ -1,2 +1,0 @@
-is_cert_untrusted: "{{ true if cert_type == 'selfsigned' or (cert_type == 'letsencrypt' and is_letsencrypt_staging) else false }}"
-
