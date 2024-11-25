@@ -4,17 +4,33 @@
     dest: "~/.kube/config.{{ cluster_name }}"
     flat: true
 
-- name: Remove ~/.kube/config
-  ansible.builtin.file:
-    path: ~/.kube/config
-    state: absent
-  delegate_to: localhost
-  connection: local
+- name: Modify kubeconfig files locally
+  block:
+  - name: Replace "default" cluster name with "{{ cluster_name }}"
+    ansible.builtin.replace:
+      path: ~/.kube/config.{{ cluster_name }}
+      regexp: '\bdefault\b'
+      replace: '{{ cluster_name }}'
+      backup: yes
 
-- name: Copy current kubeconfig to ~/.kube/config
-  ansible.builtin.copy:
-    src: "~/.kube/config.{{ cluster_name }}"
-    dest: ~/.kube/config
-    mode: u=rw,g=,o=
+  - name: Backup original kubeconfig
+    ansible.builtin.copy:
+      src: ~/.kube/config
+      dest: ~/.kube/config.bak
+
+  - name: Merge configs
+    ansible.builtin.shell: >
+      KUBECONFIG=~/.kube/config:~/.kube/config.{{ cluster_name }}
+      kubectl config view --merge --flatten > ~/.kube/config.merged
+
+  - name: Replace original kubeconfig with merged config
+    ansible.builtin.copy:
+      src: ~/.kube/config.merged
+      dest: ~/.kube/config
+
+  - name: Remove temporary merged kubeconfig
+    ansible.builtin.file:
+      path: ~/.kube/config.merged
+      state: absent
   delegate_to: localhost
   connection: local
