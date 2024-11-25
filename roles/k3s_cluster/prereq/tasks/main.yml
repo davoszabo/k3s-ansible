@@ -67,3 +67,19 @@
     path: /etc/sudoers
     validate: 'visudo -cf %s'
   when: ansible_os_family in [ "RedHat", "Suse" ]
+
+- name: Create directory /etc/rancher/k3s
+  ansible.builtin.file:
+    path: "/etc/{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - rancher
+    - rancher/k3s
+
+- name: Copy custom kubelet configuration file
+  ansible.builtin.copy:
+    src: kubelet-config.yaml
+    dest: "/etc/rancher/kubelet-config.yaml"
+    mode: '0644'
+

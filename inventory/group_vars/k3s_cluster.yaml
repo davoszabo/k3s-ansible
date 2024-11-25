@@ -14,6 +14,7 @@ k3s_master_taint: "{{ true if groups['k3s_workers'] | default([]) | length >= 1 
 extra_args_base: >-
   {{ '--flannel-iface=' + flannel.iface if cni == 'flannel' }}
   --node-ip={{ k3s_node_ip }}
+  --kubelet-arg="config=/etc/rancher/kubelet-config.yaml"
 
 # Change these to your liking, the only required are: --disable servicelb, --tls-san {{ apiserver_endpoint }}
 # the contents of the if block is also required if using calico or cilium
@@ -34,3 +35,4 @@ extra_args_server: >-
 
 extra_args_worker: >-
   {{ extra_args_base }}
+
