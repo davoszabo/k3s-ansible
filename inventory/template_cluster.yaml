@@ -456,6 +456,7 @@ kubernetes:
           token_url: ""
           api_url: ""
           signout_redirect_url: ""
+          role_attribute_path: contains(groups, 'authentik_admins') && 'Admin' || contains(groups, 'developers') && 'Editor' || 'Viewer'
 
     minio:
       enabled: false

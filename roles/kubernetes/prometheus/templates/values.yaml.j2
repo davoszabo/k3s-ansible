@@ -17,6 +17,7 @@ grafana:
       auth_url: {{ prometheus.grafana.openid.auth_url }}
       token_url: {{ prometheus.grafana.openid.token_url }}
       api_url: {{ prometheus.grafana.openid.api_url }}
+      role_attribute_path: {{ prometheus.grafana.openid.role_attribute_path }}
 {% if is_cert_untrusted %}
       tls_client_ca: /etc/grafana/ssl/ca-cert.crt
 {% endif %}

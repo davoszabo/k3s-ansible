@@ -23,7 +23,7 @@
     template: 'ca-cert-secret.yaml.j2'
   when: cert_path_global != ''
 
-- name: Deploy prometheus loaded from template (helm)
+- name: Deploy kube-prometheus-stack loaded from template (helm)
   kubernetes.core.helm:
     name: prometheus
     chart_ref: prometheus-community/kube-prometheus-stack
@@ -32,6 +32,36 @@
     create_namespace: false
     update_repo_cache: true
     values: "{{ lookup('template', 'values.yaml.j2') | from_yaml }}"
+
+- name: Add log aggregation to monitoring
+  block:
+    - name: Add grafana Helm repository
+      kubernetes.core.helm_repository:
+        name: "grafana"
+        url: "https://grafana.github.io/helm-charts"
+        state: present
+
+    - name: Deploy loki loaded from template (helm)
+      kubernetes.core.helm:
+        name: loki
+        chart_ref: grafana/loki
+        chart_version: "{{ prometheus.loki.chart_version }}"
+        release_namespace: "{{ prometheus.namespace }}"
+        create_namespace: false
+        update_repo_cache: true
+        values: "{{ lookup('template', 'values-loki.yaml.j2') | from_yaml }}"
+
+    - name: Deploy promtail loaded from template (helm)
+      kubernetes.core.helm:
+        name: promtail
+        chart_ref: grafana/promtail
+        # chart_version: "{{ prometheus.promtail.chart_version }}"
+        release_namespace: "{{ prometheus.namespace }}"
+        create_namespace: false
+        update_repo_cache: true
+        # values: "{{ lookup('template', 'values-promtail.yaml.j2') | from_yaml }}"
+
+  when: prometheus.loki.enabled
 
 - name: Deploy IngressRoute from template file
   kubernetes.core.k8s:
