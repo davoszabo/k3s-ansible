@@ -27,7 +27,7 @@ spec:
         - manager
         env:
         - name: vip_arp
-          value: "true"
+          value: "{{ 'true' if kube_vip.arp | bool else 'false' }}"
         - name: port
           value: "6443"
 {% if kube_vip_iface %}
@@ -43,7 +43,7 @@ spec:
         - name: vip_ddns
           value: "false"
         - name: svc_enable
-          value: "{{ 'true' if kube_vip.ip_range is defined else 'false' }}"
+          value: "{{ 'true' if kube_vip.lb_ip_range is defined else 'false' }}"
         - name: vip_leaderelection
           value: "true"
         - name: vip_leaseduration
