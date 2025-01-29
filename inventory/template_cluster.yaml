@@ -245,7 +245,7 @@ kubernetes:
     traefik:
       enabled: false
       namespace: iam
-      chart_version: v26.1.0
+      chart_version: v34.1.0
       # IP should be in the MetalLB/kube-vip-cloud-provider range
       lb_ip: 192.168.0.21
       ingress_class: "traefik-private"
@@ -263,7 +263,7 @@ kubernetes:
     cert_manager:
       enabled: false
       namespace: iam
-      chart_version: v1.14.3
+      chart_version: v1.16.2
       certificate:
         # -- Options: selfsigned | letsencrypt
         type: "letsencrypt"
