@@ -1,0 +1,31 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRouteUDP
+metadata:
+  name: valheim-query
+  namespace: {{ valheim.namespace }}
+  annotations: 
+    kubernetes.io/ingress.class: {{ traefik.ingress_class }}
+spec:
+  entryPoints:
+    - valheim-query
+  routes:
+   - services:
+      - name: valheim-server
+        port: 2457
+
+---
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRouteUDP
+metadata:
+  name: valheim-server
+  namespace: {{ valheim.namespace }}
+  annotations: 
+    kubernetes.io/ingress.class: {{ traefik.ingress_class }}
+spec:
+  entryPoints:
+    - valheim-server
+  routes:
+   - services:
+      - name: valheim-server
+        port: 2456

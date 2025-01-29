@@ -24,6 +24,18 @@ ports:
   websecure:
     tls:
       enabled: true
+{% if valheim.enabled %}
+  valheim-server:
+    port: 2456
+    expose: true
+    exposedPort: 2456
+    protocol: UDP
+  valheim-query:
+    port: 2457
+    expose: true
+    exposedPort: 2457
+    protocol: UDP
+{% endif %}
       
 ingressRoute:
   dashboard:
