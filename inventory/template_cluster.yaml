@@ -23,7 +23,7 @@ k3s_cluster:
     cluster_name: k3s_cluster
     
     # The k3s version.
-    k3s_version: v1.27.9+k3s1
+    k3s_version: v1.31.3+k3s1
     
     # This is the user that has SSH access to the machines.
     ansible_user: root
@@ -32,7 +32,7 @@ k3s_cluster:
     systemd_dir: /etc/systemd/system
     
     # Your timezone.
-    system_timezone: "Europe/Budapest"
+    system_timezone: Europe/Budapest
     
     # Token needed to ensure control planes can talk together securely. This token should be alpha numeric only!
     k3s_token: "SOME-SUPER-SECRET-PASSWORD"
@@ -52,7 +52,7 @@ k3s_cluster:
     
     kube_vip:
       # Image tag for kube-vip.
-      tag_version: "v0.5.12"
+      tag_version: v0.8.9
 
       # Tag for kube-vip-cloud-provider manifest.
       cloud_provider_tag_version: "main"
@@ -60,6 +60,7 @@ k3s_cluster:
       # kube-vip IP range for load balancer.
       lb_ip_range: "192.168.0.21-192.168.0.29"
     
+    # NOT SUPPORTED YET!
     metallb:
       # Metallb type frr or native.
       type: "native"
@@ -222,7 +223,7 @@ terraform:
       api_token_secret: ""
       target_node: "pve"
       # Start ID for VMs
-      vmid: 900
+      vmid: 1100
       template_name: "ubuntu24-cloudinit"
       gateway: "192.168.0.1"
       vm_cores: 2
