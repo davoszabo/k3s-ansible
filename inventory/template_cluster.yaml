@@ -233,7 +233,6 @@ terraform:
       cipassword: password
       ssh_public_key: |
         ssh-rsa ASDASD root@host
-      name_prefix: "k3s-default"
 
 # For 'kubectl' and 'helm' commands
 
@@ -274,7 +273,7 @@ kubernetes:
         letsencrypt:
           # -- Options: staging | production
           environment: "staging" 
-      # -- Options: duckdns | cloudflare
+      # -- Options: duckdns | cloudflare | local
       dns_provider: "duckdns"
       duckdns:
         email: "user@email.com"
@@ -324,7 +323,7 @@ kubernetes:
     longhorn:
       enabled: false
       namespace: longhorn-system
-      chart_version: 1.6.0
+      chart_version: 1.8.0
       dashboard:
         enabled: true
         # <subdomain_name>.example.com
