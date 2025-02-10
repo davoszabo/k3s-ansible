@@ -1,0 +1,9 @@
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: local-selfsigned-issuer
+  namespace: {{ cert_manager.namespace }}
+spec:
+  ca:
+    secretName: local-selfsigned-secret
