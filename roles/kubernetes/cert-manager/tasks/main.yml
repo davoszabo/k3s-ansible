@@ -40,6 +40,15 @@
   ansible.builtin.include_tasks: certificate_types/letsencrypt.yml
   when: cert_manager.certificate.type == 'letsencrypt'
 
+- name: Check if self signed certificate already exists
+  ansible.builtin.stat:
+    path: "{{ cert_path }}"
+  register: cert_file
+
+- name: Include tasks for CA creation
+  ansible.builtin.include_tasks: certificate_types/ca_cert.yml
+  when: cert_manager.certificate.type == 'selfsigned' and not cert_file.stat.exists
+
 - name: Include tasks for Self signed certificate
   ansible.builtin.include_tasks: certificate_types/selfsigned.yml
   when: cert_manager.certificate.type == 'selfsigned'

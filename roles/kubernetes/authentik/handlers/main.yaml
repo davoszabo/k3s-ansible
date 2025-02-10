@@ -4,7 +4,7 @@
     kind: IngressRoute
     namespace: "{{ traefik.namespace }}"
     name: traefik-dashboard
-    api_version: traefik.containo.us/v1alpha1
+    api_version: traefik.io/v1alpha1
     patch:
       - op: replace
         path: /spec/routes/0/middlewares/0/name
