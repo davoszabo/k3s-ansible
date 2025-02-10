@@ -47,14 +47,15 @@
   roles:
     - role: fetch
 
-- name: Include base ingress helm install after k3s installation
-  ansible.builtin.import_playbook: base_ingress.yaml
-  tags: ingress
+# - name: Include base ingress helm install after k3s installation
+#   ansible.builtin.import_playbook: base_ingress.yaml
+#   tags: ingress
+# 
+# - name: Include base storage helm install after k3s installation
+#   ansible.builtin.import_playbook: base_storage.yaml
+#   tags: storage
+# 
+# - name: Include base apps helm install after k3s installation
+#   ansible.builtin.import_playbook: base_apps.yaml
+#   tags: apps
 
-- name: Include base storage helm install after k3s installation
-  ansible.builtin.import_playbook: base_storage.yaml
-  tags: storage
-
-- name: Include base apps helm install after k3s installation
-  ansible.builtin.import_playbook: base_apps.yaml
-  tags: apps
