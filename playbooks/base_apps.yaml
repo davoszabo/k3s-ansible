@@ -16,6 +16,10 @@
   connection: local
   gather_facts: false
   roles:
+    - role: cilium-hubble
+      when: cilium.hubble_ui.enabled
+      tags:
+        - cilium-hubble
     - role: rancher
       when: rancher.enabled
       tags:

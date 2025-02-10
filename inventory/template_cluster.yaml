@@ -79,12 +79,11 @@ k3s_cluster:
       ip_range: "192.168.0.21-192.168.0.29"
     
     # Container Network Interface.
-    # -- Options: flannel | calico | cilium
-    # -- ONLY FLANNEL SUPPORTED CURRENTLY !!!
+    # -- Supported options: flannel | cilium
     cni: "flannel"
     
     # If using calico or cilium, you may specify the cluster pod cidr pool!
-    cluster_cidr: "192.168.36.0/24"
+    cluster_cidr: "10.52.0.0/16"
     
     flannel:
       # Interface which will be used for flannel.
@@ -101,7 +100,6 @@ k3s_cluster:
       # calico version tag
       tag: "v3.27.0"
     
-    # NOT SUPPORTED YET!
     # cilium cni instead of flannel or calico
     # ensure v4.19.57, v5.1.16, v5.2.0 or more recent kernel
     cilium:
@@ -111,7 +109,7 @@ k3s_cluster:
       mode: "native"
       
       # cilium version tag
-      tag: "v1.14.6"
+      tag: "v1.17.0"
       
       # enable hubble observability relay and ui
       hubble: true          
@@ -284,6 +282,12 @@ kubernetes:
       cloudflare:
         email: "user@email.com"
         api_token:  ""
+
+    cilium:
+      hubble_ui:
+        enabled: false
+        namespace: kube-system
+        subdomain_name: hubble
     
     cloudflared:
       enabled: false
