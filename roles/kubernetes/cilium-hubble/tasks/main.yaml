@@ -1,0 +1,7 @@
+---
+
+- name: Deploy Hubble UI IngressRoute from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'ingressRoute.yaml.j2'
+

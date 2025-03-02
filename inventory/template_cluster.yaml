@@ -23,7 +23,7 @@ k3s_cluster:
     cluster_name: k3s_cluster
     
     # The k3s version.
-    k3s_version: v1.27.9+k3s1
+    k3s_version: v1.31.3+k3s1
     
     # This is the user that has SSH access to the machines.
     ansible_user: root
@@ -32,7 +32,7 @@ k3s_cluster:
     systemd_dir: /etc/systemd/system
     
     # Your timezone.
-    system_timezone: "Europe/Budapest"
+    system_timezone: Europe/Budapest
     
     # Token needed to ensure control planes can talk together securely. This token should be alpha numeric only!
     k3s_token: "SOME-SUPER-SECRET-PASSWORD"
@@ -52,14 +52,15 @@ k3s_cluster:
     
     kube_vip:
       # Image tag for kube-vip.
-      tag_version: "v0.5.12"
-      
+      tag_version: v0.8.9
+
       # Tag for kube-vip-cloud-provider manifest.
       cloud_provider_tag_version: "main"
       
       # kube-vip IP range for load balancer.
-      ip_range: "192.168.0.21-192.168.0.29"
+      lb_ip_range: "192.168.0.21-192.168.0.29"
     
+    # NOT SUPPORTED YET!
     metallb:
       # Metallb type frr or native.
       type: "native"
@@ -78,12 +79,11 @@ k3s_cluster:
       ip_range: "192.168.0.21-192.168.0.29"
     
     # Container Network Interface.
-    # -- Options: flannel | calico | cilium
-    # -- ONLY FLANNEL SUPPORTED CURRENTLY !!!
+    # -- Supported options: flannel | cilium
     cni: "flannel"
     
     # If using calico or cilium, you may specify the cluster pod cidr pool!
-    cluster_cidr: "192.168.36.0/24"
+    cluster_cidr: "10.52.0.0/16"
     
     flannel:
       # Interface which will be used for flannel.
@@ -100,7 +100,6 @@ k3s_cluster:
       # calico version tag
       tag: "v3.27.0"
     
-    # NOT SUPPORTED YET!
     # cilium cni instead of flannel or calico
     # ensure v4.19.57, v5.1.16, v5.2.0 or more recent kernel
     cilium:
@@ -110,7 +109,7 @@ k3s_cluster:
       mode: "native"
       
       # cilium version tag
-      tag: "v1.14.6"
+      tag: "v1.17.0"
       
       # enable hubble observability relay and ui
       hubble: true          
@@ -222,9 +221,10 @@ terraform:
       api_token_secret: ""
       target_node: "pve"
       # Start ID for VMs
-      vmid: 900
+      vmid: 1100
       template_name: "ubuntu24-cloudinit"
       gateway: "192.168.0.1"
+      cpu_type: "x86-64-v3"
       vm_cores: 2
       vm_memory: 2048
       storage_pool: "local"
@@ -233,7 +233,6 @@ terraform:
       cipassword: password
       ssh_public_key: |
         ssh-rsa ASDASD root@host
-      name_prefix: "k3s-default"
 
 # For 'kubectl' and 'helm' commands
 
@@ -244,7 +243,7 @@ kubernetes:
     traefik:
       enabled: false
       namespace: iam
-      chart_version: v26.1.0
+      chart_version: v34.1.0
       # IP should be in the MetalLB/kube-vip-cloud-provider range
       lb_ip: 192.168.0.21
       ingress_class: "traefik-private"
@@ -262,7 +261,7 @@ kubernetes:
     cert_manager:
       enabled: false
       namespace: iam
-      chart_version: v1.14.3
+      chart_version: v1.16.2
       certificate:
         # -- Options: selfsigned | letsencrypt
         type: "letsencrypt"
@@ -274,7 +273,7 @@ kubernetes:
         letsencrypt:
           # -- Options: staging | production
           environment: "staging" 
-      # -- Options: duckdns | cloudflare
+      # -- Options: duckdns | cloudflare | local
       dns_provider: "duckdns"
       duckdns:
         email: "user@email.com"
@@ -282,6 +281,12 @@ kubernetes:
       cloudflare:
         email: "user@email.com"
         api_token:  ""
+
+    cilium:
+      hubble_ui:
+        enabled: false
+        namespace: kube-system
+        subdomain_name: hubble
     
     cloudflared:
       enabled: false
@@ -318,7 +323,7 @@ kubernetes:
     longhorn:
       enabled: false
       namespace: longhorn-system
-      chart_version: 1.6.0
+      chart_version: 1.8.0
       dashboard:
         enabled: true
         # <subdomain_name>.example.com
@@ -456,6 +461,7 @@ kubernetes:
           token_url: ""
           api_url: ""
           signout_redirect_url: ""
+          role_attribute_path: contains(groups, 'authentik_admins') && 'Admin' || contains(groups, 'developers') && 'Editor' || 'Viewer'
 
     minio:
       enabled: false
@@ -485,4 +491,26 @@ kubernetes:
       subdomain_name: "home-assistant"
       openid:
         enabled: false
+
+    valheim:
+      enabled: false
+      namespace: valheim
+      chart_version: 2.0.1
+      # leave blank for new world (Dedicated) or use existing one
+      world_name: ""
+      server_name: valheim-server
+      password: superSecurePW123
+      # -- Options: "" (for default) | local-storage
+      storage_class: local-storage
+      local_storage:
+        # The worker node's mounted external drive
+        path: /pool/valheim
+        # The name of the worker node which has a mounted external drive (HDD or SSD)
+        node_name: node-name
+      data:
+        # Size in Gi
+        world:
+          size: 1Gi
+        server:
+          size: 5Gi
 

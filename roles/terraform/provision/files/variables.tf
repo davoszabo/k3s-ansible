@@ -36,6 +36,12 @@ variable "gateway" {
   type        = string
 }
 
+variable "cpu_type" {
+  description = "CPU type."
+  type        = string
+  default     = "host"  # Optional default value
+}
+
 variable "vm_cores" {
   description = "Number of CPU cores for the VM."
   type        = number
@@ -63,12 +69,6 @@ variable "ssh_public_key" {
   type        = string
 }
 
-variable "name_prefix" {
-  description = "Prefix for naming server nodes in the cluster."
-  type        = string
-  default     = "k3s-default"  # Optional default value
-}
-
 variable "storage_pool" {
   description = "The pool used for VM disk space"
   type        = string
@@ -86,7 +86,6 @@ variable "nodes" {
   type = list(object({
     name = string
     ip   = string
-    type = string  # Either 'server' or 'worker'
   }))
 }
 

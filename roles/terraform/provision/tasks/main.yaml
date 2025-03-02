@@ -1,11 +1,6 @@
 - name: Add k3s_servers and k3s_workers to nodes
   set_fact:
-    nodes: "{{ nodes | default([]) + (groups[item.group] | map('extract', hostvars) | json_query('[].{ip: ansible_host, name: inventory_hostname}') | map('combine', {'type': item.type})) }}"
-  loop:
-    - group: k3s_servers
-      type: srv
-    - group: k3s_workers
-      type: wrk
+    nodes: "{{ nodes | default([]) + (groups['k3s_cluster'] | map('extract', hostvars) | json_query('[].{ip: ansible_host, name: inventory_hostname}')) }}"
 
 - name: Provision VMs in Proxmox with Terraform
   community.general.terraform:
@@ -21,6 +16,7 @@
       vmid: "{{ proxmox.vmid }}"
       template_name: "{{ proxmox.template_name }}"
       gateway: "{{ proxmox.gateway }}"
+      cpu_type: "{{ proxmox.cpu_type }}"
       vm_cores: "{{ proxmox.vm_cores }}"
       vm_memory: "{{ proxmox.vm_memory }}"
       storage_pool: "{{ proxmox.storage_pool }}"
@@ -28,7 +24,6 @@
       ciuser: "{{ proxmox.ciuser }}"
       cipassword: "{{ proxmox.cipassword }}"
       ssh_public_key: "{{ proxmox.ssh_public_key }}"
-      name_prefix: "{{ proxmox.name_prefix }}"
       nodes: "{{ nodes }}"
   register: tf_output
   when: provider == 'proxmox'

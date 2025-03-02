@@ -1,10 +1,11 @@
 resource "proxmox_vm_qemu" "k3s_node" {
     for_each        = { for node in var.nodes : node.name => node }
-    name            = "${var.name_prefix}-${each.value.type}-${format("%02d", index(var.nodes, each.value) + 1)}"
+    name            = "${each.value.name}"
     target_node     = var.proxmox_target_node
     vmid            = var.vmid + index(var.nodes, each.value)
     clone           = var.template_name
     full_clone      = "true"
+    cpu             = var.cpu_type
     cores           = var.vm_cores
     memory          = var.vm_memory
     os_type         = "cloud-init"

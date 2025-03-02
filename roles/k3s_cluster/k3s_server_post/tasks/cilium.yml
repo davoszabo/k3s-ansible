@@ -1,3 +1,4 @@
+
 ---
 - name: Prepare Cilium CLI on first master and deploy CNI
   when: ansible_hostname == hostvars[groups[group_name_master | default('master')][0]]['ansible_hostname']
@@ -9,7 +10,7 @@
         state: directory
         owner: root
         group: root
-        mode: 0755
+        mode: "0755"
 
     - name: Check if Cilium CLI is installed
       ansible.builtin.command: cilium version
@@ -32,11 +33,11 @@
 
     - name: Get latest stable Cilium CLI version file
       ansible.builtin.get_url:
-        url: "https://raw.githubusercontent.com/cilium/cilium-cli/main/stable.txt"
-        dest: "/tmp/k3s/cilium-cli-stable.txt"
+        url: https://raw.githubusercontent.com/cilium/cilium-cli/main/stable.txt
+        dest: /tmp/k3s/cilium-cli-stable.txt
         owner: root
         group: root
-        mode: 0755
+        mode: "0755"
 
     - name: Read Cilium CLI stable version from file
       ansible.builtin.command: cat /tmp/k3s/cilium-cli-stable.txt
@@ -59,7 +60,6 @@
             (cilium_cli_installed.rc == 0 and
             installed_cli_version != cli_ver.stdout)
           }}
-
     - name: Install or update Cilium CLI
       when: cilium_cli_needs_update
       block:
@@ -70,15 +70,15 @@
         - name: Download Cilium CLI and checksum
           ansible.builtin.get_url:
             url: "{{ cilium_base_url }}/cilium-linux-{{ cli_arch }}{{ item }}"
-            dest: "/tmp/k3s/cilium-linux-{{ cli_arch }}{{ item }}"
+            dest: /tmp/k3s/cilium-linux-{{ cli_arch }}{{ item }}
             owner: root
             group: root
-            mode: 0755
+            mode: "0755"
           loop:
-            - ".tar.gz"
-            - ".tar.gz.sha256sum"
+            - .tar.gz
+            - .tar.gz.sha256sum
           vars:
-            cilium_base_url: "https://github.com/cilium/cilium-cli/releases/download/{{ cli_ver.stdout }}"
+            cilium_base_url: https://github.com/cilium/cilium-cli/releases/download/{{ cli_ver.stdout }}
 
         - name: Verify the downloaded tarball
           ansible.builtin.shell: |
@@ -89,7 +89,7 @@
 
         - name: Extract Cilium CLI to /usr/local/bin
           ansible.builtin.unarchive:
-            src: "/tmp/k3s/cilium-linux-{{ cli_arch }}.tar.gz"
+            src: /tmp/k3s/cilium-linux-{{ cli_arch }}.tar.gz
             dest: /usr/local/bin
             remote_src: true
 
@@ -98,8 +98,8 @@
             path: "{{ item }}"
             state: absent
           loop:
-            - "/tmp/k3s/cilium-linux-{{ cli_arch }}.tar.gz"
-            - "/tmp/k3s/cilium-linux-{{ cli_arch }}.tar.gz.sha256sum"
+            - /tmp/k3s/cilium-linux-{{ cli_arch }}.tar.gz
+            - /tmp/k3s/cilium-linux-{{ cli_arch }}.tar.gz.sha256sum
 
     - name: Wait for connectivity to kube VIP
       ansible.builtin.command: ping -c 1 {{ apiserver_endpoint }}
@@ -112,11 +112,12 @@
 
     - name: Fail if kube VIP not reachable
       ansible.builtin.fail:
-        msg: "API endpoint {{ apiserver_endpoint }} is not reachable"
+        msg: API endpoint {{ apiserver_endpoint }} is not reachable
       when: ping_result.rc != 0
 
     - name: Test for existing Cilium install
-      ansible.builtin.command: k3s kubectl -n kube-system get daemonsets cilium
+      ansible.builtin.command: |
+        {{ k3s_kubectl_binary | default('k3s kubectl') }} -n kube-system get daemonsets cilium
       register: cilium_installed
       failed_when: false
       changed_when: false
@@ -125,7 +126,6 @@
     - name: Check existing Cilium install
       when: cilium_installed.rc == 0
       block:
-
         - name: Check Cilium version
           ansible.builtin.command: cilium version
           register: cilium_version
@@ -143,19 +143,16 @@
                 | first
                 | default('unknown')
               }}
-
         - name: Determine if Cilium needs update
           ansible.builtin.set_fact:
             cilium_needs_update: >-
               {{ 'v' + installed_cilium_version != cilium.tag }}
-
         - name: Log result
           ansible.builtin.debug:
             msg: >
               Installed Cilium version: {{ installed_cilium_version }},
               Target Cilium version: {{ cilium.tag }},
               Update needed: {{ cilium_needs_update }}
-
     - name: Install Cilium
       ansible.builtin.command: >-
         {% if cilium_installed.rc != 0 %}
@@ -165,27 +162,27 @@
         {% endif %}
         --version "{{ cilium.tag }}"
         --helm-set operator.replicas="1"
-        {{ '--helm-set devices=' + cilium_iface if cilium_iface != 'auto' else '' }}
+        {{ '--helm-set devices=' + cilium.iface if cilium.iface != 'auto' else '' }}
         --helm-set ipam.operator.clusterPoolIPv4PodCIDRList={{ cluster_cidr }}
-        {% if cilium.mode == "native" or (cilium_bgp and cilium_exportPodCIDR != 'false') %}
+        {% if cilium.mode == "native" or (cilium.bgp and cilium.exportPodCIDR != 'false') %}
         --helm-set ipv4NativeRoutingCIDR={{ cluster_cidr }}
         {% endif %}
-        --helm-set k8sServiceHost={{ apiserver_endpoint }}
-        --helm-set k8sServicePort="6443"
-        --helm-set routingMode={{ cilium.mode | default("native") }}
+        --helm-set k8sServiceHost="127.0.0.1"
+        --helm-set k8sServicePort="6444"
+        --helm-set routingMode={{ cilium.mode }}
         --helm-set autoDirectNodeRoutes={{ "true" if cilium.mode == "native" else "false" }}
-        --helm-set kubeProxyReplacement={{ kube_proxy_replacement | default("true") }}
-        --helm-set bpf.masquerade={{ enable_bpf_masquerade | default("true") }}
-        --helm-set bgpControlPlane.enabled={{ cilium_bgp | default("false") }}
-        --helm-set hubble.enabled={{ "true" if cilium_hubble else "false" }}
-        --helm-set hubble.relay.enabled={{ "true" if cilium_hubble else "false" }}
-        --helm-set hubble.ui.enabled={{ "true" if cilium_hubble else "false" }}
+        --helm-set kubeProxyReplacement={{ kube_proxy_replacement }}
+        --helm-set bpf.masquerade={{ enable_bpf_masquerade }}
+        --helm-set bgpControlPlane.enabled={{ cilium.bgp | default("false") }}
+        --helm-set hubble.enabled={{ "true" if cilium.hubble else "false" }}
+        --helm-set hubble.relay.enabled={{ "true" if cilium.hubble else "false" }}
+        --helm-set hubble.ui.enabled={{ "true" if cilium.hubble else "false" }}
         {% if kube_proxy_replacement is not false %}
-        --helm-set bpf.loadBalancer.algorithm={{ bpf_lb_algorithm | default("maglev") }}
-        --helm-set bpf.loadBalancer.mode={{ bpf_lb_mode | default("hybrid") }}
+        --helm-set bpf.loadBalancer.algorithm={{ bpf_lb_algorithm }}
+        --helm-set bpf.loadBalancer.mode={{ bpf_lb_mode }}
         {% endif %}
       environment:
-        KUBECONFIG: /home/{{ ansible_user }}/.kube/config
+        KUBECONFIG: "{{ ansible_user_dir }}/.kube/config"
       register: cilium_install_result
       changed_when: cilium_install_result.rc == 0
       when: cilium_installed.rc != 0 or cilium_needs_update
@@ -193,46 +190,48 @@
     - name: Wait for Cilium resources
       ansible.builtin.command: >-
         {% if item.type == 'daemonset' %}
-        k3s kubectl wait pods
+        {{ k3s_kubectl_binary | default('k3s kubectl') }} wait pods
         --namespace=kube-system
         --selector='k8s-app=cilium'
         --for=condition=Ready
         {% else %}
-        k3s kubectl wait {{ item.type }}/{{ item.name }}
+        {{ k3s_kubectl_binary | default('k3s kubectl') }} wait {{ item.type }}/{{ item.name }}
         --namespace=kube-system
         --for=condition=Available
         {% endif %}
-        --timeout=7s
+        --timeout=30s
       register: cr_result
       changed_when: false
       until: cr_result is succeeded
       retries: 30
       delay: 7
       with_items:
-        - {name: cilium-operator, type: deployment}
-        - {name: cilium, type: daemonset, selector: 'k8s-app=cilium'}
-        - {name: hubble-relay, type: deployment, check_hubble: true}
-        - {name: hubble-ui, type: deployment, check_hubble: true}
+        - { name: cilium-operator, type: deployment }
+        - { name: cilium, type: daemonset, selector: k8s-app=cilium }
+        - { name: hubble-relay, type: deployment, check_hubble: true }
+        - { name: hubble-ui, type: deployment, check_hubble: true }
       loop_control:
         label: "{{ item.type }}/{{ item.name }}"
       when: >-
-        not item.check_hubble | default(false) or (item.check_hubble | default(false) and cilium_hubble)
-
+        not item.check_hubble | default(false) or (item.check_hubble | default(false) and cilium.hubble)
     - name: Configure Cilium BGP
-      when: cilium_bgp
+      when: cilium.bgp
       block:
+        - name: Set _cilium_bgp_neighbors fact
+          ansible.builtin.set_fact:
+            _cilium_bgp_neighbors: "{{ lookup('community.general.merge_variables', '^cilium_bgp_neighbors__.+$', initial_value=cilium.bgp_neighbors, groups=cilium.bgp_neighbors_groups) }}"  # yamllint disable-line rule:line-length
 
         - name: Copy BGP manifests to first master
           ansible.builtin.template:
-            src: "cilium.crs.j2"
+            src: cilium.crs.j2
             dest: /tmp/k3s/cilium-bgp.yaml
             owner: root
             group: root
-            mode: 0755
+            mode: "0755"
 
         - name: Apply BGP manifests
           ansible.builtin.command:
-            cmd: kubectl apply -f /tmp/k3s/cilium-bgp.yaml
+            cmd: "{{ k3s_kubectl_binary | default('k3s kubectl') }} apply -f /tmp/k3s/cilium-bgp.yaml"
           register: apply_cr
           changed_when: "'configured' in apply_cr.stdout or 'created' in apply_cr.stdout"
           failed_when: "'is invalid' in apply_cr.stderr"
@@ -246,8 +245,8 @@
         - name: Test for BGP config resources
           ansible.builtin.command: "{{ item }}"
           loop:
-            - k3s kubectl get CiliumBGPPeeringPolicy.cilium.io
-            - k3s kubectl get CiliumLoadBalancerIPPool.cilium.io
+            - "{{ k3s_kubectl_binary | default('k3s kubectl') }} get CiliumBGPPeeringPolicy.cilium.io"
+            - "{{ k3s_kubectl_binary | default('k3s kubectl') }} get CiliumLoadBalancerIPPool.cilium.io"
           changed_when: false
           loop_control:
             label: "{{ item }}"

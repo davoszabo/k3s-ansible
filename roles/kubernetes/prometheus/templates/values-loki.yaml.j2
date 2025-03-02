@@ -1,0 +1,97 @@
+loki:
+  commonConfig:
+    replication_factor: 1
+  schemaConfig:
+    configs:
+      - from: "2024-04-01"
+        store: "tsdb"
+        object_store: "s3"
+        schema: "v13"
+        index:
+          prefix: "loki_index_"
+          period: "24h"
+  ingester:
+    chunk_encoding: "snappy"
+  tracing:
+    enabled: true
+  querier:
+    max_concurrent: 2
+  auth_enabled: false
+  storage_config:
+    aws:
+      # Note: use a fully qualified domain name (fqdn), like localhost.
+      # full example: http://loki:supersecret@localhost.:9000
+      # s3: "s3://{{ prometheus.loki.access_key }}:{{ prometheus.loki.secret }}@{{ prometheus.loki.endpoint }}/{{ prometheus.loki.bucket_name }}"
+      region: {{ prometheus.loki.region }}
+      bucketnames: {{ prometheus.loki.bucket_name }}
+      endpoint: {{ prometheus.loki.endpoint }}
+      secret_access_key: {{ prometheus.loki.secret }}
+      access_key_id: {{ prometheus.loki.access_key }}
+      s3forcepathstyle: true
+      http_config:
+        insecure_skip_verify: {{ is_cert_untrusted }}
+  storage:
+    # Loki requires a bucket for chunks and the ruler. GEL requires a third bucket for the admin API.
+    # Please provide these values if you are using object storage.
+    bucketNames:
+      chunks: {{ prometheus.loki.bucket_name }}
+    #   ruler: FIXME
+    #   admin: FIXME
+    type: filesystem
+    # s3:
+    #   endpoint: {{ prometheus.loki.endpoint }}
+    #   region: {{ prometheus.loki.region }}
+    #   secretAccessKey: {{ prometheus.loki.secret }}
+    #   accessKeyId: {{ prometheus.loki.access_key }}
+    #   s3ForcePathStyle: true
+    #   insecure: {{ is_cert_untrusted }}
+      
+
+deploymentMode: "SingleBinary"
+singleBinary:
+  replicas: 1
+  persistence:
+    enabled: true
+    size: 3Gi
+  resources:
+    limits:
+      cpu: 3
+      memory: "4Gi"
+    requests:
+      cpu: 2
+      memory: "2Gi"
+  extraEnv:
+    - name: "GOMEMLIMIT"
+      value: "3750MiB"
+
+chunksCache:
+  writebackSizeLimit: "10MB"
+
+minio:
+  enabled: false
+
+backend:
+  replicas: 0
+read:
+  replicas: 0
+write:
+  replicas: 0
+ingester:
+  replicas: 0
+querier:
+  replicas: 0
+queryFrontend:
+  replicas: 0
+queryScheduler:
+  replicas: 0
+distributor:
+  replicas: 0
+compactor:
+  replicas: 0
+indexGateway:
+  replicas: 0
+bloomCompactor:
+  replicas: 0
+bloomGateway:
+  replicas: 0
+

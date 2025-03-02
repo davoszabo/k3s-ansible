@@ -1,16 +1,17 @@
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: minio-api
-  namespace: {{ minio.namespace }}
+  name: cilium-hubble-ui
+  namespace: {{ cilium.hubble_ui.namespace }}
   annotations: 
     kubernetes.io/ingress.class: {{ traefik.ingress_class }}
 spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`{{ minio.subdomain_name }}-api.{{ traefik.domain_name }}`)
+    - match: Host(`{{ cilium.hubble_ui.subdomain_name }}.{{ traefik.domain_name }}`)
       kind: Rule
       services:
-        - name: minio
-          port: 9000
+        - name: hubble-ui
+          port: 80
+
