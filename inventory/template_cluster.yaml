@@ -492,3 +492,25 @@ kubernetes:
       openid:
         enabled: false
 
+    valheim:
+      enabled: false
+      namespace: valheim
+      chart_version: 2.0.1
+      # leave blank for new world (Dedicated) or use existing one
+      world_name: ""
+      server_name: valheim-server
+      password: superSecurePW123
+      # -- Options: "" (for default) | local-storage
+      storage_class: local-storage
+      local_storage:
+        # The worker node's mounted external drive
+        path: /pool/valheim
+        # The name of the worker node which has a mounted external drive (HDD or SSD)
+        node_name: node-name
+      data:
+        # Size in Gi
+        world:
+          size: 1Gi
+        server:
+          size: 5Gi
+

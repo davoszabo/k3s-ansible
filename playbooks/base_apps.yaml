@@ -64,5 +64,9 @@
       when: home_assistant.enabled
       tags:
         - home-assistant
+    - role: valheim
+      when: valheim.enabled
+      tags:
+        - valheim
 
 

@@ -1,0 +1,41 @@
+---
+
+- name: Create namespace "{{ valheim.namespace }}"
+  kubernetes.core.k8s:
+    name: "{{ valheim.namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Add valheim Helm repository
+  kubernetes.core.helm_repository:
+    name: "valheim-k8s"
+    url: "https://addyvan.github.io/valheim-k8s"
+    state: present
+
+- name: Deploy storage manifests from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'local-storage.yaml.j2'
+  when: valheim.storage_class == "local-storage"
+
+- name: Deploy valheim loaded from template (helm)
+  kubernetes.core.helm:
+    name: valheim-server
+    chart_ref: valheim-k8s/valheim-k8s
+    chart_version: "{{ valheim.chart_version }}"
+    release_namespace: "{{ valheim.namespace }}"
+    create_namespace: false
+    update_repo_cache: true
+    values: "{{ lookup('template', 'values.yaml.j2') | from_yaml }}"
+
+- name: Deploy IngressRouteUDP from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'ingressRouteUDP.yaml.j2'
+
+- name: Add warning
+  ansible.builtin.debug:
+    msg: "WARNING: Re-deploy traefik instance if UDP traffics are not open"
+  when: traefik.enabled
+
