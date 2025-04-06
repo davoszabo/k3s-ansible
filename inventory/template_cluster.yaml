@@ -290,6 +290,13 @@ kubernetes:
         enabled: false
         namespace: kube-system
         subdomain_name: hubble
+
+    # This utility cleans up pods that are not in Running state
+    pod_cleaner:
+      enabled: false
+      namespace: kube-system
+      cron: "0 22 * * *"
+      remove_before_days: "3" # DO not use 0
     
     cloudflared:
       enabled: false

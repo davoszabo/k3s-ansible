@@ -20,6 +20,10 @@
       when: cilium.hubble_ui.enabled
       tags:
         - cilium-hubble
+    - role: pod-cleaner
+      when: pod_cleaner.enabled
+      tags:
+        - pod-cleaner
     - role: rancher
       when: rancher.enabled
       tags:
