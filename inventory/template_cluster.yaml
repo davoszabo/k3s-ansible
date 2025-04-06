@@ -83,7 +83,7 @@ k3s_cluster:
     cni: "flannel"
     
     # If using calico or cilium, you may specify the cluster pod cidr pool!
-    cluster_cidr: "10.52.0.0/16"
+    cluster_cidr: "10.42.0.0/16"
     
     flannel:
       # Interface which will be used for flannel.
