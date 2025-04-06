@@ -3,12 +3,12 @@
 - name: Deploy Let's Encrypt ClusterIssuer from template file ({{ cert_manager.certificate.letsencrypt.environment }})
   kubernetes.core.k8s:
     state: present
-    template: 'issuers/{{ cert_manager.dns_provider }}-le-{{ cert_manager.certificate.letsencrypt.environment }}-issuer.yaml.j2'
+    template: 'issuers/{{ cert_manager.dns.provider }}-le-{{ cert_manager.certificate.letsencrypt.environment }}-issuer.yaml.j2'
 
 - name: Deploy Let's Encrypt Certificate from template file ({{ cert_manager.certificate.letsencrypt.environment }})
   kubernetes.core.k8s:
     state: present
-    template: 'certificates/{{ cert_manager.dns_provider }}-le-{{ cert_manager.certificate.letsencrypt.environment }}-certificate.yaml.j2'
+    template: 'certificates/{{ cert_manager.dns.provider }}-le-{{ cert_manager.certificate.letsencrypt.environment }}-certificate.yaml.j2'
 
 - name: Download staging RSA lets encrypt certificate
   ansible.builtin.get_url:

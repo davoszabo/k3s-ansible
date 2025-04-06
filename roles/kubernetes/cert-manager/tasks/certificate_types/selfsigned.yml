@@ -3,15 +3,15 @@
 - name: Deploy cert-manager secret from template file
   kubernetes.core.k8s:
     state: present
-    template: 'secrets/{{ cert_manager.dns_provider }}-ss-secret.yaml.j2'
+    template: 'secrets/{{ cert_manager.dns.provider }}-ss-secret.yaml.j2'
 
 - name: Deploy self-signed ClusterIssuer from template file
   kubernetes.core.k8s:
     state: present
-    template: 'issuers/{{ cert_manager.dns_provider }}-ss-issuer.yaml.j2'
+    template: 'issuers/{{ cert_manager.dns.provider }}-ss-issuer.yaml.j2'
 
 - name: Deploy self-signed Certificate from template file
   kubernetes.core.k8s:
     state: present
-    template: 'certificates/{{ cert_manager.dns_provider }}-ss-certificate.yaml.j2'
+    template: 'certificates/{{ cert_manager.dns.provider }}-ss-certificate.yaml.j2'
 

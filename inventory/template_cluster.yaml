@@ -273,14 +273,17 @@ kubernetes:
         letsencrypt:
           # -- Options: staging | production
           environment: "staging" 
-      # -- Options: duckdns | cloudflare | local
-      dns_provider: "duckdns"
-      duckdns:
-        email: "user@email.com"
-        token: ""
-      cloudflare:
-        email: "user@email.com"
-        api_token:  ""
+      dns:
+        # -- Options: duckdns | cloudflare | local
+        provider: "cloudflare"
+        local:
+          dns_server: "192.168.0.1"
+        duckdns:
+          email: "user@email.com"
+          token: ""
+        cloudflare:
+          email: "user@email.com"
+          api_token:  ""
 
     cilium:
       hubble_ui:

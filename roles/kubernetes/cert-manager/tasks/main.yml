@@ -30,11 +30,11 @@
 
 - name: Include tasks for DuckDNS
   ansible.builtin.include_tasks: dns_providers/duckdns.yml
-  when: cert_manager.dns_provider == 'duckdns'
+  when: cert_manager.dns.provider == 'duckdns'
 
 - name: Include tasks for Cloudflare
   ansible.builtin.include_tasks: dns_providers/cloudflare.yml
-  when: cert_manager.dns_provider == 'cloudflare'
+  when: cert_manager.dns.provider == 'cloudflare'
 
 - name: Include tasks for Let's Encrypt certificate
   ansible.builtin.include_tasks: certificate_types/letsencrypt.yml
@@ -52,4 +52,10 @@
 - name: Include tasks for Self signed certificate
   ansible.builtin.include_tasks: certificate_types/selfsigned.yml
   when: cert_manager.certificate.type == 'selfsigned'
+
+- name: Custom local DNS
+  kubernetes.core.k8s:
+    state: present
+    template: 'local-dns.yaml.j2'
+  when: cert_manager.dns.provider == 'local'
 
