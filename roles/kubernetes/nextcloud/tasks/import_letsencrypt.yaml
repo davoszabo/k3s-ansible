@@ -1,9 +1,9 @@
 ---
 
-- name: Download RSA lets encrypt certificate
-  ansible.builtin.get_url:
-    url: https://letsencrypt.org/certs/staging/letsencrypt-stg-int-r3.pem
-    dest: "{{ role_path }}/files"
+# - name: Download RSA lets encrypt certificate
+#   ansible.builtin.get_url:
+#     url: https://letsencrypt.org/certs/staging/letsencrypt-stg-int-r3.pem
+#     dest: "{{ role_path }}/files"
 
 - name: Copy lets encrypt certificate into nextcloud pod
   kubernetes.core.k8s_cp:
