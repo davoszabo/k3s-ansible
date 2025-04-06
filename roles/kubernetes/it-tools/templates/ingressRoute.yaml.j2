@@ -1,0 +1,22 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: it-tools
+  namespace: {{ it_tools.namespace }}
+  annotations: 
+    kubernetes.io/ingress.class: {{ traefik.ingress_class }}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{ it_tools.subdomain_name }}.{{ traefik.domain_name }}`)
+      kind: Rule
+{% if authentik.enabled %}
+      middlewares:
+        - name: authentik-forwardauth
+          namespace: {{ authentik.namespace }}
+{% endif %}
+      services:
+        - name: it-tools
+          port: 8080
+

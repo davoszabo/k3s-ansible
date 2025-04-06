@@ -72,5 +72,8 @@
       when: valheim.enabled
       tags:
         - valheim
-
+    - role: it-tools
+      when: it_tools.enabled
+      tags:
+        - it-tools
 

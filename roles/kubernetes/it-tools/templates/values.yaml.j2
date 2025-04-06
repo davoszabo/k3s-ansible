@@ -1,0 +1,187 @@
+# Default values for it-tools.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+## @section Global parameters
+## @param replicaCount Number of replicas of the it-tools Deployment
+replicaCount: 1
+
+## @param affinity Affinity for pod assignment
+## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+## NOTE: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
+##
+affinity: {}
+## @param nodeSelector Node labels for pod assignment
+## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+##
+nodeSelector: {}
+## @param tolerations Tolerations for pod assignment
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+##
+tolerations: []
+
+## @param podAnnotations Additional annotations for the Pod resource
+## @param podLabels Additional labels for the Pod resource
+podAnnotations: {}
+podLabels: {}
+
+## @param imagePullSecrets Docker registry pull secrets
+## @param nameOverride Name override
+## @param fullnameOverride Full name override
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+## @section Image parameters
+## @param image.repository Container image repository
+## @param image.pullPolicy Container image pull policy
+## @param image.tag Overrides the image tag whose default is the chart appVersion
+image:
+  repository: ghcr.io/corentinth/it-tools
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+## @section Metrics parameters
+## @param metrics.enabled Enables metrics
+## @param metrics.containerName Nginx Prometheus exporter container name
+## @param metrics.image.repository Metrics Container image repository
+## @param metrics.image.pullPolicy Metrics Container image pull policy
+## @param metrics.image.tag Overrides the metrics image tag
+## @param metrics.args Metrics container command arguments
+## @param metrics.port Metrics port number
+## @param metrics.portName Metrics port name
+## @param metrics.resources.requests.cpu Minimum CPU requested
+## @param metrics.resources.requests.memory Minimum memory requested
+## @extra metrics.resources.limits.cpu Maximum CPU allowed
+## @extra metrics.resources.limits.memory Maximum memory allowed
+## @param metrics.securityContext.capabilities.drop Capabilities to drop
+## @param metrics.securityContext.readOnlyRootFilesystem If root filesystem should be read-only
+## @param metrics.securityContext.runAsNonRoot If pod should be run as non-root
+## @param metrics.securityContext.runAsUser User to run pod as
+## @param metrics.securityContext.runAsGroup Group to run pod as
+## @param metrics.securityContext.allowPrivilegeEscalation If privilege escalation should be allowed
+## @param metrics.securityContext.seccompProfile.type seccomp profile type
+metrics:
+  enabled: false
+  containerName: nginx-prometheus-exporter
+  image:
+    repository: nginx/nginx-prometheus-exporter
+    pullPolicy: IfNotPresent
+    tag: "1.4.1"
+  args:
+    - --nginx.scrape-uri=http://localhost:8081/stub_status
+  port: 9113
+  portName: metrics
+  resources: {}
+  securityContext:
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 10099
+    runAsGroup: 10099
+    allowPrivilegeEscalation: false
+    seccompProfile:
+      type: RuntimeDefault
+
+## @section Service account parameters
+## @param serviceAccount.create Specifies whether a service account should be created
+## @param serviceAccount.automount Automatically mount a ServiceAccount's API credentials?
+## @param serviceAccount.annotations Additional annotations for the ServiceAccount resource
+## @param serviceAccount.name The name of the service account to use. If not set and create is true, a name is generated using the fullname template
+serviceAccount:
+  create: false
+  automount: true
+  annotations: {}
+  name: ""
+
+## @section Security context parameters
+## @param securityContext.capabilities.drop Capabilities to drop
+## @param securityContext.readOnlyRootFilesystem If root filesystem should be read-only
+## @param securityContext.runAsNonRoot If container should be run as non-root
+## @param securityContext.runAsUser User to run container as
+## @param securityContext.runAsGroup Group to run container as
+## @param securityContext.allowPrivilegeEscalation If privilege escalation should be allowed
+## @param securityContext.seccompProfile.type seccomp profile type
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 10099
+  runAsGroup: 10099
+  allowPrivilegeEscalation: false
+  seccompProfile:
+    type: RuntimeDefault
+
+podSecurityContext: {}
+
+## @section Service parameters
+## @param service.type Service type to create
+## @param service.port Service port to use
+service:
+  type: ClusterIP
+  port: 8080
+
+## @section Ingress parameters
+## Configure the ingress resource that allows you to access the Apache installation
+## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+##
+## @param ingress.enabled Enable ingress record generation
+## @param ingress.className IngressClass that will be be used to implement the Ingress
+## @param ingress.annotations Additional annotations for the Ingress resource
+## @param ingress.hosts An array with hostname(s) to be covered with the ingress record
+## @param ingress.tls TLS configuration for hostname(s) to be covered with this ingress record
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts: []
+  tls: []
+
+## @section Resources parameters
+## @param resources.requests.cpu Minimum CPU requested
+## @param resources.requests.memory Minimum memory requested
+## @extra resources.limits.cpu Maximum CPU allowed
+## @extra resources.limits.memory Maximum memory allowed
+resources: {}
+
+## @section Autoscaling parameters
+## Autoscaling parameters
+## ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+## @param autoscaling.enabled Enable Horizontal POD autoscaling
+## @param autoscaling.minReplicas Minimum number of replicas
+## @param autoscaling.maxReplicas Maximum number of replicas
+## @param autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage
+## @param autoscaling.targetMemoryUtilizationPercentage Target Memory utilization percentage
+##
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+## @section Nginx configuration parameters
+## Nginx configuration parameters
+## @param nginxConf.existingConfigmap Provide an existing ConfigMap for the Nginx configuration 
+## @param nginxConf.cachePath Provide a cache path override (useful for other it-tools images such as Chainguard) 
+##
+nginxConf:
+  existingConfigmap: ""
+  cachePath: "/var/cache/nginx"
+
+## @section Extra volumes parameter
+## Extra volumes parameter
+## @param extraVolumes Provide extra volumes for the main pod 
+##
+extraVolumes: []
+
+## @section Extra containers parameter
+## Extra containers parameter
+## @param extraContainers Provide extra containers for the main pod 
+##
+extraContainers: []
+

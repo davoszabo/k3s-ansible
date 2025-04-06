@@ -575,3 +575,10 @@ kubernetes:
         server:
           size: 5Gi
 
+    it_tools:
+      enabled: false
+      namespace: it-tools
+      chart_version: 0.1.1
+      # This is for WebUI
+      subdomain_name: "it-tools"
+

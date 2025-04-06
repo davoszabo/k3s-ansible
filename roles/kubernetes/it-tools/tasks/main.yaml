@@ -1,0 +1,23 @@
+---
+
+- name: Add it-tools Helm repository
+  kubernetes.core.helm_repository:
+    name: "jeffresc"
+    url: "https://charts.jeffresc.dev"
+    state: present
+
+- name: Deploy it_tools loaded from template (helm)
+  kubernetes.core.helm:
+    name: "it-tools"
+    chart_ref: "jeffresc/it-tools"
+    chart_version: "{{ it_tools.chart_version }}"
+    release_namespace: "{{ it_tools.namespace }}"
+    create_namespace: true
+    update_repo_cache: true
+    values: "{{ lookup('template', 'values.yaml.j2') | from_yaml }}"
+
+- name: Deploy IngressRoute from template
+  kubernetes.core.k8s:
+    state: present
+    template: 'ingressRoute.yaml.j2'
+
