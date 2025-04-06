@@ -76,4 +76,8 @@
       when: it_tools.enabled
       tags:
         - it-tools
+    - role: semaphoreui
+      when: semaphoreui.enabled
+      tags:
+        - semaphoreui
 

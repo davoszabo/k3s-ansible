@@ -582,3 +582,15 @@ kubernetes:
       # This is for WebUI
       subdomain_name: "it-tools"
 
+    semaphoreui:
+      enabled: false
+      namespace: semaphoreui
+      chart_version: 1.0.0
+      # This is for WebUI
+      subdomain_name: "semaphoreui"
+      oidc:
+        enabled: false
+        provider_slug: semaphore-ui
+        client_id: ""
+        client_secret: ""
+

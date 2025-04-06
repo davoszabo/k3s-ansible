@@ -1,0 +1,40 @@
+---
+
+- name: Create namespace "{{ semaphoreui.namespace }}"
+  kubernetes.core.k8s:
+    name: "{{ semaphoreui.namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Read CA certificate file
+  set_fact:
+    ca_cert_file: "{{ lookup('file', cert_path_global) }}"
+
+- name: Deploy CA secret manifests from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'ca-cert-secret.yaml.j2'
+  when: cert_path_global != ''
+
+- name: Add semaphoreui Helm repository
+  kubernetes.core.helm_repository:
+    name: "semaphoreui"
+    url: "https://semaphoreui.github.io/charts"
+    state: present
+
+- name: Deploy semaphoreui loaded from template (helm)
+  kubernetes.core.helm:
+    name: "semaphoreui"
+    chart_ref: "semaphoreui/semaphoreui"
+    chart_version: "{{ semaphoreui.chart_version }}"
+    release_namespace: "{{ semaphoreui.namespace }}"
+    create_namespace: true
+    update_repo_cache: true
+    values: "{{ lookup('template', 'values.yaml.j2') | from_yaml }}"
+
+- name: Deploy IngressRoute from template
+  kubernetes.core.k8s:
+    state: present
+    template: 'ingressRoute.yaml.j2'
+
