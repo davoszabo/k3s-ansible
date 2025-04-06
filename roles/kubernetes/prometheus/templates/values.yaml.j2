@@ -4,6 +4,21 @@ alertmanager:
 grafana:
   enabled: {{ prometheus.grafana.enabled }}
   assertNoLeakedSecrets: false
+
+{% if prometheus.restrictToNodes %}
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            {% for item in prometheus.restrictToNodes %}
+            - {{ item }}
+            {% endfor %}
+{% endif %}
+  
   persistence:
     enabled: {{ prometheus.grafana.persistence.enabled }}
     size: {{ prometheus.grafana.persistence.size }}
@@ -88,5 +103,17 @@ kubeProxy:
 
 prometheus:
   enabled: true
-
-
+  prometheusSpec:
+{% if prometheus.restrictToNodes %}
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+              {% for item in prometheus.restrictToNodes %}
+              - {{ item }}
+              {% endfor %}
+{% endif %}

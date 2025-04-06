@@ -474,6 +474,9 @@ kubernetes:
       enabled: false
       namespace: monitoring
       chart_version: 63.1.0
+      # Node Affinity to list of hostnames
+      restrictToNodes:
+        - k3s-bastion-worker-03
       grafana:
         enabled: true
         subdomain_name: "grafana"
@@ -493,6 +496,21 @@ kubernetes:
           api_url: ""
           signout_redirect_url: ""
           role_attribute_path: contains(groups, 'authentik_admins') && 'Admin' || contains(groups, 'developers') && 'Editor' || 'Viewer'
+      loki:
+        # ENABLE ONLY IF MINIO IS SET UP PROPERLY
+        enabled: false
+        subdomain_name: "loki"
+        chart_version: 6.22.0
+        persistence:
+          enabled: true
+          size: 3Gi
+          existingClaim: ""
+        s3:
+          access_key: ""
+          secret: ""
+          region: ""
+          endpoint: "https://{{ minio.subdomain_name + '-api.' + traefik.domain_name }}"
+          bucket_name: loki
 
     minio:
       enabled: false
@@ -504,6 +522,8 @@ kubernetes:
       admin_user:
         username: minioadmin
         password: "SOME-SUPER-SECRET-PASSWORD"
+      # Changes file and folder permissions for the mount. In case it takes too much time, it can be disabled, but make sure it ran at least once.
+      volumePermissions: true
       data:
         # The worker node's mounted external drive
         path: /pool/minio
