@@ -307,7 +307,7 @@ kubernetes:
     authentik:
       enabled: false
       namespace: iam
-      chart_version: 2024.4.2
+      chart_version: 2024.12.3
       # <subdomain_name>.example.com
       subdomain_name: authentik
       # If your dns_domain is "domain.com", it will be redirected to "<authentik.subdomain_name>.domain.com"
