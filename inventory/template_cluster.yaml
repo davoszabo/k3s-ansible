@@ -323,6 +323,16 @@ kubernetes:
         email: user@example.org
       dashboard:
         enabled: true
+      persistence:
+        media:
+          size: 2Gi
+          existingClaim: ""
+        database:
+          size: 2Gi
+          existingClaim: ""
+        redis:
+          size: 2Gi
+          existingClaim: ""
     
     longhorn:
       enabled: false
@@ -406,7 +416,12 @@ kubernetes:
         # The name of the worker node which has a mounted external drive (HDD or SSD)
         node_name: node-name
         # Size in Gi
-        size: 1Gi
+        size: 200Gi
+      config:
+        # Size in Gi
+        size: 3Gi
+        # Use existing if present (won't create new PVCs)
+        existingClaim: ""
       # Additional applications
       apps:
         # Enhances performance with pre generating thumbnails for images and videos in a separate folder.
@@ -419,9 +434,13 @@ kubernetes:
       postgresql:
         enabled: true
         password: "SOME-SUPER-SECRET-PASSWORD"
+        size: 4Gi
+        existingClaim: ""
       redis:
         enabled: true
         password: "SOME-SUPER-SECRET-PASSWORD"
+        size: 4Gi
+        existingClaim: ""
         
     # Experimental only
     nfs_client:
@@ -440,7 +459,11 @@ kubernetes:
         size: 500Gi
         # Use the GID that your users have access to!
         group_id: "100"
+      config:
+        size: 1Gi
+        existingClaim: ""
       # Only NFS supported yet for storage provisioning
+      # Install nfs utilities (utils or common libs) on the node which will mount with nfs!
       nfs:
         enabled: false
         server: 192.168.0.30
@@ -455,6 +478,10 @@ kubernetes:
         enabled: true
         subdomain_name: "grafana"
         openid:
+        persistence:
+          enabled: true
+          size: 3Gi
+          existingClaim: ""
           enabled: false
           name: authentik
           oauth_auto_login: true
@@ -494,6 +521,9 @@ kubernetes:
       # This is for WebUI
       subdomain_name: "home-assistant"
       openid:
+      persistence:
+        size: 3Gi
+        existingVolume: ""
         enabled: false
 
     valheim:

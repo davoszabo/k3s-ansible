@@ -47,16 +47,3 @@ spec:
     requests:
       storage: {{ nextcloud.data.size }}
 
----
-
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: nextcloud-config-pvc
-  namespace: {{ nextcloud.namespace }}
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 3Gi

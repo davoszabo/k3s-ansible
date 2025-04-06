@@ -17,6 +17,7 @@
   kubernetes.core.k8s:
     state: present
     template: 'persistence/media-pvc.yaml.j2'
+  when: authentik.persistence.media.existingClaim == ""
 
 - name: Deploy ConfigMap to disable or edit background from template file
   kubernetes.core.k8s:

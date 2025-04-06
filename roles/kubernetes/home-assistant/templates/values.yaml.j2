@@ -8,7 +8,8 @@ image:
 persistence:
   enabled: true
   accessMode: ReadWriteOnce
-  size: 5Gi
+  size: [% home_assistant.persistence.size %]
+  existingVolume: [% home_assistant.persistence.existingVolume %]
   storageClass: ""
 
 configuration:

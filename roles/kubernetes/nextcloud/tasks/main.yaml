@@ -18,6 +18,12 @@
     state: present
     template: 'storage.yaml.j2'
 
+- name: Deploy storage-config manifests from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'storage-config.yaml.j2'
+  when: nextcloud.config.existingClaim == ""
+
 - name: Deploy nextcloud loaded from template (helm)
   kubernetes.core.helm:
     name: nextcloud

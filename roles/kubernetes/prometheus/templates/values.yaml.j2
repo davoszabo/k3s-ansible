@@ -4,6 +4,12 @@ alertmanager:
 grafana:
   enabled: {{ prometheus.grafana.enabled }}
   assertNoLeakedSecrets: false
+  persistence:
+    enabled: {{ prometheus.grafana.persistence.enabled }}
+    size: {{ prometheus.grafana.persistence.size }}
+{% if prometheus.grafana.persistence.existingClaim|length %}
+    existingClaim: {{ prometheus.grafana.persistence.existingClaim }}
+{% endif %}
   grafana.ini:
     auth:
       signout_redirect_url: {{ prometheus.grafana.openid.signout_redirect_url }}
