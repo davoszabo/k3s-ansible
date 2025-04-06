@@ -23,7 +23,7 @@
   kubernetes.core.k8s:
     state: present
     template: 'setup-oidc-cm.yaml.j2'
-  when: minio.openid.enabled
+  when: minio.oidc.enabled
 
 - name: Deploy secret manifests from template file
   kubernetes.core.k8s:
@@ -54,4 +54,9 @@
   kubernetes.core.k8s:
     state: present
     template: 'ingressRoute.yaml.j2'
+
+- name: Deploy IngressRoute-api from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'ingressRoute-api.yaml.j2'
 

@@ -28,3 +28,8 @@
     state: present
     template: 'ingressRoute.yaml.j2'
 
+- name: Add warning
+  ansible.builtin.debug:
+    msg: "WARNING: Re-deploy Authentik might needed for proper header structure!"
+  when: home_assistant.oidc.enabled
+

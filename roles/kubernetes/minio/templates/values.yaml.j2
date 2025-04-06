@@ -10,7 +10,7 @@ persistence:
   existingClaim: "minio-data-pvc"
 
 volumePermissions:
-  enabled: true
+  enabled: {{ minio.volumePermissions }}
 
 auth:
   existingSecret: "minio-admin-secret"
@@ -26,7 +26,7 @@ extraVolumes:
         - key: public.crt
           path: CAs/public.crt
 {% endif %}
-{% if minio.openid.enabled %}
+{% if minio.oidc.enabled %}
   - name: setup-oidc-script
     configMap:
       name: setup-oidc-script
@@ -42,7 +42,7 @@ extraVolumeMounts:
     mountPath: /certs
     readOnly: true
 {% endif %}
-{% if minio.openid.enabled %}
+{% if minio.oidc.enabled %}
   - name: setup-oidc-script
     mountPath: /scripts/setup-oidc.sh
     subPath: setup-oidc.sh
@@ -51,15 +51,29 @@ extraVolumeMounts:
     mountPath: /scripts
 {% endif %}
 
-{% if minio.openid.enabled %}
+{% if minio.oidc.enabled %}
+initContainers:
+  - name: wait-for-authentik
+    image: busybox:1.37.0
+    command:
+      - sh
+      - -c
+      - |
+        echo "Waiting for Authentik to be ready..."
+        until nc -zv authentik-server.iam.svc.cluster.local 443; do
+          echo "Waiting for Authentik..."
+          sleep 5
+        done
+        echo "Authentik is up!"
+
 customStartupProbe:
   exec:
     command:
       - /scripts/setup-oidc.sh
   # Wait for Authentik
-  initialDelaySeconds: 300
-  periodSeconds: 30
-  timeoutSeconds: 600
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 20
   successThreshold: 1
   failureThreshold: 20
 {% endif %}

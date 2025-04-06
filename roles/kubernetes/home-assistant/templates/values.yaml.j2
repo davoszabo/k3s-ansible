@@ -27,16 +27,16 @@ configuration:
         {{- range .Values.configuration.trusted_proxies }}
         - {{ . }}
         {{- end }}
-{% if home_assistant.openid.enabled %}
+{% if home_assistant.oidc.enabled %}
     auth_header:
       username_header: X-ak-hass-user
       allow_bypass_login: true
       debug: false
 {% endif %}
-    # logger:
-    #   default: info
-    #   logs:
-    #     custom_components.auth_header: debug
+    logger:
+      default: info
+      # logs:
+      #   custom_components.auth_header: info
     # Load frontend themes from the themes folder
     frontend:
       themes: !include_dir_merge_named themes

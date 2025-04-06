@@ -367,7 +367,7 @@ kubernetes:
         enabled: true
         subdomain_name: "argocd"
       oidc:
-        enabled: true
+        enabled: false
         name: Authentik
         issuer: https://authentik.domain.com/application/o/argocd/
         clientID: ""
@@ -477,11 +477,11 @@ kubernetes:
       grafana:
         enabled: true
         subdomain_name: "grafana"
-        openid:
         persistence:
           enabled: true
           size: 3Gi
           existingClaim: ""
+        oidc:
           enabled: false
           name: authentik
           oauth_auto_login: true
@@ -511,7 +511,7 @@ kubernetes:
         node_name: node-name
         # Size in Gi
         size: 200Gi
-      openid:
+      oidc:
         enabled: false
 
     home_assistant:
@@ -520,10 +520,10 @@ kubernetes:
       chart_version: 0.2.82
       # This is for WebUI
       subdomain_name: "home-assistant"
-      openid:
       persistence:
         size: 3Gi
         existingVolume: ""
+      oidc:
         enabled: false
 
     valheim:

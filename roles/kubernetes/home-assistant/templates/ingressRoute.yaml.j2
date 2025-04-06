@@ -11,11 +11,6 @@ spec:
   routes:
     - match: Host(`{{ home_assistant.subdomain_name }}.{{ traefik.domain_name }}`)
       kind: Rule
-{% if authentik.enabled and home_assistant.openid.enabled %}
-      middlewares:
-        - name: authentik-forwardauth
-          namespace: {{ authentik.namespace }}
-{% endif %}
       services:
         - name: home-assistant
           port: 8080
