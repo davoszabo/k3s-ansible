@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns-custom
+  namespace: kube-system
+data:
+  custom.server: |
+    {{ cert_manager.certificate.selfsigned.common_name }} {
+        forward . {{ cert_manager.dns.local.dns_server }}
+    }
+

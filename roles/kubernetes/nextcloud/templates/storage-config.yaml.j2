@@ -1,12 +1,14 @@
+---
+
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: authentik-media-pvc
-  namespace: {{ authentik.namespace }}
+  name: nextcloud-config-pvc
+  namespace: {{ nextcloud.namespace }}
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ authentik.persistence.media.size }}
+      storage: {{ nextcloud.config.size }}
 

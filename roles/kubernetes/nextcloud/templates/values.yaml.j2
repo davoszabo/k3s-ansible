@@ -317,10 +317,10 @@ postgresql:
   primary:
     persistence:
       enabled: true
-      size: 4Gi
+      size: {{ nextcloud.postgresql.size }}
 
       # Use an existing Persistent Volume Claim (must be created ahead of time)
-      # existingClaim: ""
+      existingClaim: {{ nextcloud.postgresql.existingClaim }}
       # storageClass: ""
 
 ##
@@ -340,7 +340,8 @@ redis:
     existingSecretPasswordKey: ""
   master:
     persistence:
-      size: 4Gi
+      size: {{ nextcloud.redis.size }}
+      existingClaim: {{ nextcloud.redis.existingClaim }}
 
 
 ## Cronjob to execute Nextcloud background tasks

@@ -21,12 +21,12 @@ loki:
     aws:
       # Note: use a fully qualified domain name (fqdn), like localhost.
       # full example: http://loki:supersecret@localhost.:9000
-      # s3: "s3://{{ prometheus.loki.access_key }}:{{ prometheus.loki.secret }}@{{ prometheus.loki.endpoint }}/{{ prometheus.loki.bucket_name }}"
-      region: {{ prometheus.loki.region }}
-      bucketnames: {{ prometheus.loki.bucket_name }}
-      endpoint: {{ prometheus.loki.endpoint }}
-      secret_access_key: {{ prometheus.loki.secret }}
-      access_key_id: {{ prometheus.loki.access_key }}
+      # s3: "s3://{{ prometheus.loki.s3.access_key }}:{{ prometheus.loki.s3.secret }}@{{ prometheus.loki.s3.endpoint }}/{{ prometheus.loki.s3.bucket_name }}"
+      region: {{ prometheus.loki.s3.region }}
+      bucketnames: {{ prometheus.loki.s3.bucket_name }}
+      endpoint: {{ prometheus.loki.s3.endpoint }}
+      secret_access_key: {{ prometheus.loki.s3.secret }}
+      access_key_id: {{ prometheus.loki.s3.access_key }}
       s3forcepathstyle: true
       http_config:
         insecure_skip_verify: {{ is_cert_untrusted }}
@@ -34,15 +34,15 @@ loki:
     # Loki requires a bucket for chunks and the ruler. GEL requires a third bucket for the admin API.
     # Please provide these values if you are using object storage.
     bucketNames:
-      chunks: {{ prometheus.loki.bucket_name }}
+      chunks: {{ prometheus.loki.s3.bucket_name }}
     #   ruler: FIXME
     #   admin: FIXME
     type: filesystem
     # s3:
-    #   endpoint: {{ prometheus.loki.endpoint }}
-    #   region: {{ prometheus.loki.region }}
-    #   secretAccessKey: {{ prometheus.loki.secret }}
-    #   accessKeyId: {{ prometheus.loki.access_key }}
+    #   endpoint: {{ prometheus.loki.s3.endpoint }}
+    #   region: {{ prometheus.loki.s3.region }}
+    #   secretAccessKey: {{ prometheus.loki.s3.secret }}
+    #   accessKeyId: {{ prometheus.loki.s3.access_key }}
     #   s3ForcePathStyle: true
     #   insecure: {{ is_cert_untrusted }}
       
@@ -51,18 +51,25 @@ deploymentMode: "SingleBinary"
 singleBinary:
   replicas: 1
   persistence:
-    enabled: true
-    size: 3Gi
-  resources:
-    limits:
-      cpu: 3
-      memory: "4Gi"
-    requests:
-      cpu: 2
-      memory: "2Gi"
+    enabled: {{ prometheus.loki.persistence.enabled }}
+    size: {{ prometheus.loki.persistence.size }}
+    existingClaim: {{ prometheus.loki.persistence.existingClaim }}
   extraEnv:
     - name: "GOMEMLIMIT"
       value: "3750MiB"
+{% if prometheus.restrictToNodes %}
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            {% for item in prometheus.restrictToNodes %}
+            - {{ item }}
+            {% endfor %}
+{% endif %}
 
 chunksCache:
   writebackSizeLimit: "10MB"

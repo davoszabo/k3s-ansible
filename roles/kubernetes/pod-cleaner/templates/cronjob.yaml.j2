@@ -1,0 +1,52 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: stale-pod-cleanup
+  namespace: {{ pod_cleaner.namespace }}
+spec:
+  schedule: "{{ pod_cleaner.cron }}"
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: pod-cleaner
+          restartPolicy: Never
+          containers:
+          - name: cleaner
+            image: bitnami/kubectl:1.32.3
+            env:
+            - name: DAYS_BEFORE
+              value: "{{ pod_cleaner.remove_before_days }}"
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Starting stale pod cleanup at $(date)"
+              echo "DAYS_BEFORE: $DAYS_BEFORE"
+              kubectl version --client || exit 1
+              jq --version || exit 1
+              echo
+
+              TOTAL_DELETED=0
+
+              kubectl get pods --all-namespaces -o json | \
+              jq -r --arg days "$DAYS_BEFORE" '
+                .items[] | 
+                select(
+                  .status.phase != "Running" and 
+                  ((.metadata.creationTimestamp | fromdateiso8601) < (now - ($days | tonumber) * 86400))
+                ) |
+                "\(.metadata.namespace) \(.metadata.name)"
+              ' | \
+              while read -r namespace pod; do
+                echo "[ACTION] Deleting stale pod '$pod' in '$namespace'"
+                kubectl delete pod -n "$namespace" "$pod" && TOTAL_DELETED=$((TOTAL_DELETED + 1)) || echo "[ERROR] Failed to delete $pod"
+              done
+
+              echo
+              echo "Cleanup completed."
+              echo "Total pods deleted: $TOTAL_DELETED"
+              exit 0
+

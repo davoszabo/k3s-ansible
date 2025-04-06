@@ -20,7 +20,7 @@ secret:
   existingSecretName: "duckdns-token-secret"
 
 clusterIssuer:
-  email: {{ cert_manager.duckdns.email }}
+  email: {{ cert_manager.dns.duckdns.email }}
   staging:
     create: false
   production:

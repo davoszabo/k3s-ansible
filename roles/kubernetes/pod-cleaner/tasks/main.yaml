@@ -1,0 +1,12 @@
+---
+
+- name: Deploy pod-cleaner RBAC
+  kubernetes.core.k8s:
+    state: present
+    template: 'rbac.yaml.j2'
+
+- name: Deploy pod-cleaner CronJob
+  kubernetes.core.k8s:
+    state: present
+    template: 'cronjob.yaml.j2'
+

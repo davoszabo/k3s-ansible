@@ -83,7 +83,7 @@ k3s_cluster:
     cni: "flannel"
     
     # If using calico or cilium, you may specify the cluster pod cidr pool!
-    cluster_cidr: "10.52.0.0/16"
+    cluster_cidr: "10.42.0.0/16"
     
     flannel:
       # Interface which will be used for flannel.
@@ -273,20 +273,30 @@ kubernetes:
         letsencrypt:
           # -- Options: staging | production
           environment: "staging" 
-      # -- Options: duckdns | cloudflare | local
-      dns_provider: "duckdns"
-      duckdns:
-        email: "user@email.com"
-        token: ""
-      cloudflare:
-        email: "user@email.com"
-        api_token:  ""
+      dns:
+        # -- Options: duckdns | cloudflare | local
+        provider: "cloudflare"
+        local:
+          dns_server: "192.168.0.1"
+        duckdns:
+          email: "user@email.com"
+          token: ""
+        cloudflare:
+          email: "user@email.com"
+          api_token:  ""
 
     cilium:
       hubble_ui:
         enabled: false
         namespace: kube-system
         subdomain_name: hubble
+
+    # This utility cleans up pods that are not in Running state
+    pod_cleaner:
+      enabled: false
+      namespace: kube-system
+      cron: "0 22 * * *"
+      remove_before_days: "3" # DO not use 0
     
     cloudflared:
       enabled: false
@@ -299,11 +309,12 @@ kubernetes:
       namespace: cattle-system
       chart_version: 2.10.0
       subdomain_name: rancher
+      bootstrapPassword: SOME-SUPER-SECRET-PASSWORD
     
     authentik:
       enabled: false
       namespace: iam
-      chart_version: 2024.4.2
+      chart_version: 2024.12.3
       # <subdomain_name>.example.com
       subdomain_name: authentik
       # If your dns_domain is "domain.com", it will be redirected to "<authentik.subdomain_name>.domain.com"
@@ -319,6 +330,16 @@ kubernetes:
         email: user@example.org
       dashboard:
         enabled: true
+      persistence:
+        media:
+          size: 2Gi
+          existingClaim: ""
+        database:
+          size: 2Gi
+          existingClaim: ""
+        redis:
+          size: 2Gi
+          existingClaim: ""
     
     longhorn:
       enabled: false
@@ -353,7 +374,7 @@ kubernetes:
         enabled: true
         subdomain_name: "argocd"
       oidc:
-        enabled: true
+        enabled: false
         name: Authentik
         issuer: https://authentik.domain.com/application/o/argocd/
         clientID: ""
@@ -390,7 +411,7 @@ kubernetes:
     nextcloud:
       enabled: false
       namespace: nextcloud
-      chart_version: 4.6.6
+      chart_version: 4.6.8
       # <subdomain_name>.example.com
       subdomain_name: "nextcloud"
       admin_user:
@@ -402,7 +423,12 @@ kubernetes:
         # The name of the worker node which has a mounted external drive (HDD or SSD)
         node_name: node-name
         # Size in Gi
-        size: 1Gi
+        size: 200Gi
+      config:
+        # Size in Gi
+        size: 3Gi
+        # Use existing if present (won't create new PVCs)
+        existingClaim: ""
       # Additional applications
       apps:
         # Enhances performance with pre generating thumbnails for images and videos in a separate folder.
@@ -415,9 +441,13 @@ kubernetes:
       postgresql:
         enabled: true
         password: "SOME-SUPER-SECRET-PASSWORD"
+        size: 4Gi
+        existingClaim: ""
       redis:
         enabled: true
         password: "SOME-SUPER-SECRET-PASSWORD"
+        size: 4Gi
+        existingClaim: ""
         
     # Experimental only
     nfs_client:
@@ -436,7 +466,11 @@ kubernetes:
         size: 500Gi
         # Use the GID that your users have access to!
         group_id: "100"
+      config:
+        size: 1Gi
+        existingClaim: ""
       # Only NFS supported yet for storage provisioning
+      # Install nfs utilities (utils or common libs) on the node which will mount with nfs!
       nfs:
         enabled: false
         server: 192.168.0.30
@@ -447,10 +481,17 @@ kubernetes:
       enabled: false
       namespace: monitoring
       chart_version: 63.1.0
+      # Node Affinity to list of hostnames
+      restrictToNodes:
+        - k3s-bastion-worker-03
       grafana:
         enabled: true
         subdomain_name: "grafana"
-        openid:
+        persistence:
+          enabled: true
+          size: 3Gi
+          existingClaim: ""
+        oidc:
           enabled: false
           name: authentik
           oauth_auto_login: true
@@ -462,6 +503,21 @@ kubernetes:
           api_url: ""
           signout_redirect_url: ""
           role_attribute_path: contains(groups, 'authentik_admins') && 'Admin' || contains(groups, 'developers') && 'Editor' || 'Viewer'
+      loki:
+        # ENABLE ONLY IF MINIO IS SET UP PROPERLY
+        enabled: false
+        subdomain_name: "loki"
+        chart_version: 6.22.0
+        persistence:
+          enabled: true
+          size: 3Gi
+          existingClaim: ""
+        s3:
+          access_key: ""
+          secret: ""
+          region: ""
+          endpoint: "https://{{ minio.subdomain_name + '-api.' + traefik.domain_name }}"
+          bucket_name: loki
 
     minio:
       enabled: false
@@ -473,6 +529,8 @@ kubernetes:
       admin_user:
         username: minioadmin
         password: "SOME-SUPER-SECRET-PASSWORD"
+      # Changes file and folder permissions for the mount. In case it takes too much time, it can be disabled, but make sure it ran at least once.
+      volumePermissions: true
       data:
         # The worker node's mounted external drive
         path: /pool/minio
@@ -480,7 +538,7 @@ kubernetes:
         node_name: node-name
         # Size in Gi
         size: 200Gi
-      openid:
+      oidc:
         enabled: false
 
     home_assistant:
@@ -489,7 +547,10 @@ kubernetes:
       chart_version: 0.2.82
       # This is for WebUI
       subdomain_name: "home-assistant"
-      openid:
+      persistence:
+        size: 3Gi
+        existingVolume: ""
+      oidc:
         enabled: false
 
     valheim:
@@ -513,4 +574,23 @@ kubernetes:
           size: 1Gi
         server:
           size: 5Gi
+
+    it_tools:
+      enabled: false
+      namespace: it-tools
+      chart_version: 0.1.1
+      # This is for WebUI
+      subdomain_name: "it-tools"
+
+    semaphoreui:
+      enabled: false
+      namespace: semaphoreui
+      chart_version: 1.0.0
+      # This is for WebUI
+      subdomain_name: "semaphoreui"
+      oidc:
+        enabled: false
+        provider_slug: semaphore-ui
+        client_id: ""
+        client_secret: ""
 

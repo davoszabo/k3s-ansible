@@ -18,6 +18,12 @@
     state: present
     template: 'storage.yaml.j2'
 
+- name: Deploy storage-config manifests from template file
+  kubernetes.core.k8s:
+    state: present
+    template: 'storage-config.yaml.j2'
+  when: nextcloud.config.existingClaim == ""
+
 - name: Deploy nextcloud loaded from template (helm)
   kubernetes.core.helm:
     name: nextcloud
@@ -47,7 +53,10 @@
       - app.kubernetes.io/name = nextcloud
   register: pod_list
 
-- name: Wait till the nextcloud pod is created
+- name: >
+    Wait till the nextcloud pod is created 
+    (This might take a lot of time, so if it fails,
+    go ahead and restart the playbook!)
   kubernetes.core.k8s_info:
     kind: Pod
     wait: yes
@@ -74,3 +83,4 @@
 - name: Print occ command result
   debug:
     msg: "{{ occ_add_missing_indices_status }}"
+

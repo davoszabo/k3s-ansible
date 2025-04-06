@@ -4,20 +4,41 @@ alertmanager:
 grafana:
   enabled: {{ prometheus.grafana.enabled }}
   assertNoLeakedSecrets: false
+
+{% if prometheus.restrictToNodes %}
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            {% for item in prometheus.restrictToNodes %}
+            - {{ item }}
+            {% endfor %}
+{% endif %}
+  
+  persistence:
+    enabled: {{ prometheus.grafana.persistence.enabled }}
+    size: {{ prometheus.grafana.persistence.size }}
+{% if prometheus.grafana.persistence.existingClaim|length %}
+    existingClaim: {{ prometheus.grafana.persistence.existingClaim }}
+{% endif %}
   grafana.ini:
     auth:
-      signout_redirect_url: {{ prometheus.grafana.openid.signout_redirect_url }}
-      oauth_auto_login: {{ prometheus.grafana.openid.oauth_auto_login }}
+      signout_redirect_url: {{ prometheus.grafana.oidc.signout_redirect_url }}
+      oauth_auto_login: {{ prometheus.grafana.oidc.oauth_auto_login }}
     auth.generic_oauth:
-      name: {{ prometheus.grafana.openid.name }}
-      enabled: {{ prometheus.grafana.openid.enabled }}
-      client_id: {{ prometheus.grafana.openid.client_id }}
-      client_secret: {{ prometheus.grafana.openid.client_secret }}
-      scopes: {{ prometheus.grafana.openid.scopes }}
-      auth_url: {{ prometheus.grafana.openid.auth_url }}
-      token_url: {{ prometheus.grafana.openid.token_url }}
-      api_url: {{ prometheus.grafana.openid.api_url }}
-      role_attribute_path: {{ prometheus.grafana.openid.role_attribute_path }}
+      name: {{ prometheus.grafana.oidc.name }}
+      enabled: {{ prometheus.grafana.oidc.enabled }}
+      client_id: {{ prometheus.grafana.oidc.client_id }}
+      client_secret: {{ prometheus.grafana.oidc.client_secret }}
+      scopes: {{ prometheus.grafana.oidc.scopes }}
+      auth_url: {{ prometheus.grafana.oidc.auth_url }}
+      token_url: {{ prometheus.grafana.oidc.token_url }}
+      api_url: {{ prometheus.grafana.oidc.api_url }}
+      role_attribute_path: {{ prometheus.grafana.oidc.role_attribute_path }}
 {% if is_cert_untrusted %}
       tls_client_ca: /etc/grafana/ssl/ca-cert.crt
 {% endif %}
@@ -82,5 +103,17 @@ kubeProxy:
 
 prometheus:
   enabled: true
-
-
+  prometheusSpec:
+{% if prometheus.restrictToNodes %}
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+              {% for item in prometheus.restrictToNodes %}
+              - {{ item }}
+              {% endfor %}
+{% endif %}

@@ -65,7 +65,8 @@ persistence:
     retain: true
     storageClass: ""
     accessMode: ReadWriteOnce
-    size: 1Gi
+    size: {{ qbittorrent.config.size }}
+    existingClaim: {{ qbittorrent.config.existingClaim }}
 
   # Optional - Download location - Allows dedicated volume for storage of downloaded files.
   #downloads:

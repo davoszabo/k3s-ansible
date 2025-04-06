@@ -57,10 +57,12 @@ postgresql:
   primary:
     persistence:
       enabled: true
-      size: 2Gi
+      size: {{ authentik.persistence.database.size }}
+      existingClaim: {{ authentik.persistence.database.existingClaim }}
 
 redis:
   enabled: true
   master:
     persistence:
-      size: 2Gi
+      size: {{ authentik.persistence.redis.size }}
+      existingClaim: {{ authentik.persistence.redis.existingClaim }}
