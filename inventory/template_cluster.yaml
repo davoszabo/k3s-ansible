@@ -302,6 +302,7 @@ kubernetes:
       namespace: cattle-system
       chart_version: 2.10.0
       subdomain_name: rancher
+      bootstrapPassword: SOME-SUPER-SECRET-PASSWORD
     
     authentik:
       enabled: false
