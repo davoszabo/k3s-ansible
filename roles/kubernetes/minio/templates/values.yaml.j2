@@ -60,7 +60,7 @@ initContainers:
       - -c
       - |
         echo "Waiting for Authentik to be ready..."
-        until nc -zv authentik-server.iam.svc.cluster.local 443; do
+        until nc -zv authentik-server.{{ authentik.namespace }}.svc.cluster.local 443; do
           echo "Waiting for Authentik..."
           sleep 5
         done
